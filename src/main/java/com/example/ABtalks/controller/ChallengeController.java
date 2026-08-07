@@ -2,8 +2,12 @@ package com.example.ABtalks.controller;
 
 import com.example.ABtalks.model.StudentProfile;
 import com.example.ABtalks.model.Task;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
 import java.util.*;
 
 @RestController
@@ -13,138 +17,86 @@ public class ChallengeController {
 
     private StudentProfile activeProfile;
     private List<Task> tasks = new ArrayList<>();
+    private List<Task> baseTasks = new ArrayList<>();
     
-    // Cache profiles
     private Map<String, StudentProfile> profiles = new HashMap<>();
-    // Store task lists per profile state
-    private Map<String, List<Task>> profileTasks = new HashMap<>();
 
     public ChallengeController() {
-        initMockData();
+        loadMockData();
     }
 
-    private void initMockData() {
-        // 1. Newbie Profile
-        StudentProfile newbie = new StudentProfile(
-            "", // Empty profile
-            "",
-            "Frontend Dev",
-            0, 0, 0, 0, 60, "newbie", 
-            1, 0, new ArrayList<>()
-        );
-        profiles.put("newbie", newbie);
-        
-        // 2. Steady Streak Profile
-        List<String> steadyBadges = Arrays.asList("First Commit", "7-Day Warrior", "14-Day Overlord", "LinkedIn Influencer");
-        StudentProfile steady = new StudentProfile(
-            "Aarav Sharma",
-            "Delhi Technological University (DTU)",
-            "Full Stack Web Track",
-            18, 18, 18, 0, 60, "steady",
-            4, 1800, steadyBadges
-        );
-        profiles.put("steady", steady);
+    private void loadMockData() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ClassPathResource resource = new ClassPathResource("mockData.json");
+            InputStream is = resource.getInputStream();
+            JsonNode root = mapper.readTree(is);
 
-        // 3. Missed Day Profile
-        List<String> missedBadges = Arrays.asList("First Commit", "Early Bird");
-        StudentProfile missed = new StudentProfile(
-            "Priyanka Patel",
-            "Vellore Institute of Technology (VIT)",
-            "Backend Java Track",
-            0, 12, 12, 1, 60, "missed",
-            3, 1200, missedBadges
-        );
-        profiles.put("missed", missed);
+            // 1. Load profiles from JSON
+            JsonNode profilesNode = root.get("studentProfiles");
+            profiles.put("newbie", mapper.treeToValue(profilesNode.get("newStudent"), StudentProfile.class));
+            profiles.put("steady", mapper.treeToValue(profilesNode.get("activeStreakStudent"), StudentProfile.class));
+            profiles.put("missed", mapper.treeToValue(profilesNode.get("missedStreakStudent"), StudentProfile.class));
 
-        // Set default profile
-        activeProfile = profiles.get("steady");
-        generateTasksForState("steady");
+            // 2. Load the 60 base tasks from JSON
+            JsonNode daysNode = root.get("challengeDays");
+            List<Task> loadedTasks = mapper.readerForListOf(Task.class).readValue(daysNode);
+            baseTasks = new ArrayList<>(loadedTasks);
+
+            // Set default profile
+            activeProfile = profiles.get("steady");
+            generateTasksForState("steady");
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Fallback initialization in case of error
+            activeProfile = new StudentProfile("", "", "Frontend Track", 0, 0, 0, 0, 60, "newbie", 1, 0, new ArrayList<>());
+        }
     }
 
     private void generateTasksForState(String state) {
         tasks.clear();
-        for (int i = 1; i <= 60; i++) {
-            String title = getTaskTitle(i);
-            String desc = getTaskDesc(i);
-            String challenge = getTaskChallenge(i);
-            String difficulty = i <= 20 ? "Easy" : (i <= 45 ? "Medium" : "Hard");
+        for (Task baseTask : baseTasks) {
+            Task task = new Task();
+            task.setDayId(baseTask.getDayId());
+            task.setTitle(baseTask.getTitle());
+            task.setDescription(baseTask.getDescription());
+            task.setChallenge(baseTask.getChallenge());
+            task.setDifficulty(baseTask.getDifficulty());
             
             String status = "LOCKED";
             String github = "";
             String linkedin = "";
 
+            int day = baseTask.getDayId();
+
             if (state.equals("steady")) {
-                if (i <= 18) {
+                if (day <= 18) {
                     status = "COMPLETED";
-                    github = "https://github.com/aaravsharma/abtalks-60day/commit/d2" + i + "fbf8e";
-                    linkedin = "https://linkedin.com/posts/aarav-sharma-day" + i;
-                } else if (i == 19) {
+                    github = baseTask.getGithubUrl() != null ? baseTask.getGithubUrl() : "https://github.com/aaravsharma/abtalks-60day/commit/d2" + day + "fbf8e";
+                    linkedin = baseTask.getLinkedinUrl() != null ? baseTask.getLinkedinUrl() : "https://linkedin.com/posts/aarav-sharma-day" + day;
+                } else if (day == 19) {
                     status = "PENDING";
                 }
             } else if (state.equals("newbie")) {
-                if (i == 1) {
+                if (day == 1) {
                     status = "PENDING";
                 }
             } else if (state.equals("missed")) {
-                if (i <= 11) {
+                if (day <= 11) {
                     status = "COMPLETED";
-                    github = "https://github.com/priyankap/60days/commit/f4" + i + "bb82d";
-                    linkedin = "https://linkedin.com/posts/priyanka-p-day" + i;
-                } else if (i == 12) {
+                    github = "https://github.com/priyankap/60days/commit/f4" + day + "bb82d";
+                    linkedin = "https://linkedin.com/posts/priyanka-p-day" + day;
+                } else if (day == 12) {
                     status = "MISSED";
-                } else if (i == 13) {
+                } else if (day == 13) {
                     status = "PENDING";
                 }
             }
             
-            Task task = new Task(i, title, desc, challenge, difficulty, status);
-            if (!github.isEmpty()) {
-                task.setGithubUrl(github);
-                task.setLinkedinUrl(linkedin);
-            }
+            task.setStatus(status);
+            task.setGithubUrl(github);
+            task.setLinkedinUrl(linkedin);
             tasks.add(task);
-        }
-    }
-
-    private String getTaskTitle(int day) {
-        switch (day) {
-            case 1: return "Git Started & Workspace Setup";
-            case 2: return "HTML5 Semantics & Structure";
-            case 3: return "CSS Variables & Layouts";
-            case 4: return "Responsive Design & Flexbox";
-            case 5: return "CSS Grid & Dashboard Layouts";
-            case 6: return "JavaScript ES6 Essentials";
-            case 7: return "DOM Manipulation & Event Listeners";
-            case 8: return "Simple Interactive Calculator";
-            case 9: return "Local Storage & Persistence";
-            case 10: return "Asynchronous JavaScript & Promises";
-            case 11: return "Fetch API & Public REST Endpoints";
-            case 12: return "GitHub Profile Explorer UI";
-            case 13: return "Debouncing & Search Optimization";
-            case 14: return "ChartJS Data Visualizations";
-            case 15: return "Interactive Weather App UI";
-            case 16: return "Custom Audio Player Controls";
-            case 17: return "Regex Form Validator";
-            case 18: return "Kanban Board Drag & Drop";
-            case 19: return "Theme Controller & Light Mode";
-            case 20: return "Introduction to React and Components";
-            default: return "Day " + day + ": Cosmic Challenge";
-        }
-    }
-
-    private String getTaskDesc(int day) {
-        switch (day) {
-            case 1: return "Set up your Git workspace, sign in to GitHub, create a repository named 'abtalks-60-day-challenge', and submit your first markdown README file detailing your track goals.";
-            case 12: return "Develop a single-page card viewer that queries the public GitHub API for a user, displaying their avatar, repositories, follower counts, and starred repos in a premium glassmorphic grid.";
-            default: return "Build a mini application or layout module focusing on writing clean, modular code. Make sure it is fully responsive on mobile screen viewports (390px) and styled using variables.";
-        }
-    }
-
-    private String getTaskChallenge(int day) {
-        switch (day) {
-            case 1: return "Create a repo, add index.html, commit, push, write a LinkedIn post stating your track choice, and submit links.";
-            case 12: return "Create an input field for a GitHub username, pull user profile via Fetch API, render repositories sorted by stars, and handle errors for non-existent users gracefully.";
-            default: return "Write clean code, deploy the result to Vercel/GitHub Pages, write a daily recap post on LinkedIn, and submit the URLs below.";
         }
     }
 
@@ -212,8 +164,7 @@ public class ChallengeController {
         
         // Handle streak recovery/increment
         if (activeProfile.getProfileState().equals("missed") && dayId == 13) {
-            // Recover streak on next pending day submission
-            activeProfile.setCurrentStreak(1); // Reset and restart
+            activeProfile.setCurrentStreak(1);
             activeProfile.setProfileState("steady");
         } else if (activeProfile.getProfileState().equals("newbie")) {
             activeProfile.setCurrentStreak(1);
@@ -227,7 +178,6 @@ public class ChallengeController {
             }
         }
 
-        // Add a new badge if completed 15 days or starting
         if (activeProfile.getCompletedCount() == 1) {
             if (!activeProfile.getBadges().contains("First Commit")) {
                 activeProfile.getBadges().add("First Commit");

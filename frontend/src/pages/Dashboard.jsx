@@ -9,11 +9,11 @@ export default function Dashboard({ navigate }) {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const profRes = await fetch('http://localhost:8080/api/profile');
+      const profRes = await fetch('/api/profile');
       const profData = await profRes.json();
       setProfile(profData);
 
-      const tasksRes = await fetch('http://localhost:8080/api/tasks');
+      const tasksRes = await fetch('/api/tasks');
       const tasksData = await tasksRes.json();
       setTasks(tasksData);
     } catch (err) {
@@ -30,14 +30,14 @@ export default function Dashboard({ navigate }) {
   const switchProfileState = async (state) => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8080/api/profile/select?state=${state}`, {
+      const res = await fetch(`/api/profile/select?state=${state}`, {
         method: 'POST'
       });
       const updatedProf = await res.json();
       setProfile(updatedProf);
 
       // Refetch tasks as they change depending on profile
-      const tasksRes = await fetch('http://localhost:8080/api/tasks');
+      const tasksRes = await fetch('/api/tasks');
       const tasksData = await tasksRes.json();
       setTasks(tasksData);
     } catch (err) {
@@ -57,7 +57,7 @@ export default function Dashboard({ navigate }) {
   }
 
   // Find today's task (first task that is PENDING, or default to first LOCKED, or if all completed, day 60)
-  const todayTask = tasks.find(t => t.getStatus() === 'PENDING') || tasks.find(t => t.getStatus() === 'LOCKED') || tasks[tasks.length - 1];
+  const todayTask = tasks.find(t => t.status === 'PENDING') || tasks.find(t => t.status === 'LOCKED') || tasks[tasks.length - 1];
 
   // Calculations for circular streak progress
   const maxStreak = 60;

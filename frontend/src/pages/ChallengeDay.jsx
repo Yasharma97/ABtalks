@@ -13,7 +13,7 @@ export default function ChallengeDay({ dayId, navigate }) {
   const fetchTaskDetails = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8080/api/tasks/${dayId}`);
+      const res = await fetch(`/api/tasks/${dayId}`);
       const data = await res.json();
       setTask(data);
       
@@ -39,7 +39,7 @@ export default function ChallengeDay({ dayId, navigate }) {
     setSubmitting(true);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/tasks/${dayId}/submit`, {
+      const res = await fetch(`/api/tasks/${dayId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
