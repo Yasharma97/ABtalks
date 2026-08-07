@@ -2,113 +2,423 @@ import React from 'react';
 
 export default function LandingPage({ navigate }) {
   const tracks = [
-    { name: "Frontend Development", desc: "HTML5, CSS3, ES6 JavaScript, React, Tailwind & Vite", icon: "🌐", level: "Beginner to Pro" },
-    { name: "Backend Java", desc: "Core Java, OOPs, Spring Boot REST APIs, Gradle, Hibernate & SQL", icon: "☕", level: "Intermediate" },
-    { name: "DevOps & Cloud", desc: "Linux bash, Git, Docker, CI/CD, AWS Cloud & Kubernetes", icon: "☁️", level: "Advanced" }
+    {
+      id: "frontend",
+      name: "Frontend Web Track",
+      icon: "🌐",
+      desc: "React, Vite, CSS Grid, Framer Motion, Tailwind CSS & SEO",
+      level: "Beginner to Pro",
+      accent: "var(--color-cyan)",
+      borderClass: "card-glowing-cyan"
+    },
+    {
+      id: "backend",
+      name: "Backend Java Track",
+      icon: "☕",
+      desc: "Core Java, OOPs, Spring Boot, JPA Hibernate, Gradle & SQL",
+      level: "Intermediate",
+      accent: "var(--color-purple)",
+      borderClass: "card-glowing-purple"
+    },
+    {
+      id: "devops",
+      name: "DevOps & Cloud Track",
+      icon: "☁️",
+      desc: "Docker, Kubernetes, GitHub Actions, Linux Bash & AWS Cloud",
+      level: "Advanced",
+      accent: "var(--color-emerald)",
+      borderClass: "card-glowing-emerald"
+    }
+  ];
+
+  const valueProps = [
+    {
+      step: "01",
+      title: "Get Daily Task Coordinates",
+      desc: "Receive bite-sized industry-relevant coding problems unlocked every single day at midnight.",
+      icon: "📥"
+    },
+    {
+      step: "02",
+      title: "Commit to Public GitHub",
+      desc: "Push your solutions to Git. Build a verifiable proof of work history that recruiters can verify.",
+      icon: "🐙"
+    },
+    {
+      step: "03",
+      title: "Publish LinkedIn Daily Log",
+      desc: "Share your learnings and build public authority. Get noticed by startup founders and talent acquisition teams.",
+      icon: "📢"
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Rohan Mehta",
+      college: "BMS College of Engineering",
+      role: "React Dev @ Razorpay",
+      text: "ABTalks forced consistency in me. Pushing commits and posting on LinkedIn daily for 60 days made recruiters DM me instead of me applying. Highly recommended!",
+      avatar: "👨‍💻",
+      borderClass: "card-glowing-cyan"
+    },
+    {
+      name: "Sneha Gupta",
+      college: "HBTU Kanpur",
+      role: "Java Dev @ Cognizant",
+      text: "The late-night gamified streaks kept me coding even after long lectures. Building Spring Boot endpoints gave me real-world design experience.",
+      avatar: "👩‍💻",
+      borderClass: "card-glowing-purple"
+    }
+  ];
+
+  const recruiterLogos = [
+    { name: "Google", color: "#4285F4" },
+    { name: "Microsoft", color: "#F25022" },
+    { name: "Amazon", color: "#FF9900" },
+    { name: "TCS", color: "#1B365D" },
+    { name: "Infosys", color: "#007CC3" },
+    { name: "Razorpay", color: "#0052FF" }
   ];
 
   return (
-    <div className="anim-fade-in" style={{ padding: 'var(--space-4)' }}>
-      {/* Title / Logo Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-8)' }}>
+    <div className="anim-fade-in" style={{ padding: 'var(--space-4)', position: 'relative' }}>
+      
+      {/* Decorative cosmic nebula light source */}
+      <div style={{
+        position: 'absolute',
+        top: '-10%',
+        left: '20%',
+        width: '250px',
+        height: '250px',
+        background: 'radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(127, 0, 255, 0.05) 70%, transparent 100%)',
+        filter: 'blur(40px)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }}></div>
+
+      {/* Header Bar */}
+      <header style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 'var(--space-8)',
+        position: 'relative',
+        zIndex: 10
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: 'var(--radius-sm)',
+          <div className="anim-float" style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: 'var(--radius-md)',
             background: 'linear-gradient(135deg, var(--color-cyan), var(--color-purple))',
             boxShadow: 'var(--glow-cyan)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 'var(--fs-base)',
-            fontWeight: 'bold'
-          }}>AB</div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 'bold', fontSize: 'var(--fs-md)', letterSpacing: '1px' }}>
-            TALKS
-          </span>
+            fontSize: 'var(--fs-md)',
+            fontWeight: 'bold',
+            color: '#fff'
+          }}>
+            AB
+          </div>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: '800', fontSize: 'var(--fs-md)', letterSpacing: '1.5px', margin: 0 }}>
+              AB<span className="text-gradient-cyan-purple">TALKS</span>
+            </h1>
+            <span style={{ fontSize: '8px', color: 'var(--color-text-secondary)', letterSpacing: '2px', textTransform: 'uppercase', display: 'block', marginTop: '-3px' }}>
+              Coding Sandbox
+            </span>
+          </div>
         </div>
-        <button onClick={() => navigate('/dashboard')} className="btn btn-secondary" style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--fs-xs)' }}>
-          Enter Dashboard
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          className="btn btn-secondary" 
+          style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--fs-xs)', borderRadius: 'var(--radius-sm)' }}
+        >
+          Dashboard →
         </button>
-      </div>
+      </header>
 
       {/* Hero Section */}
-      <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-        <div className="badge badge-purple" style={{ marginBottom: 'var(--space-3)' }}>⚡ 60-Day Student Coding Challenge</div>
-        <h1 style={{ fontSize: 'var(--fs-xxl)', lineHeight: '1.2', fontWeight: '800' }}>
-          Build Consistency. <br />
+      <section style={{ textAlign: 'center', marginBottom: 'var(--space-10)', position: 'relative', zIndex: 5 }}>
+        <div className="badge badge-cyan anim-float" style={{ marginBottom: 'var(--space-4)', padding: '6px 12px', fontSize: '10px' }}>
+          ✨ The Ultimate 60-Day Student Coding Challenge
+        </div>
+        
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--fs-xxl)',
+          lineHeight: '1.2',
+          fontWeight: '900',
+          marginBottom: 'var(--space-3)'
+        }}>
+          Build Consistency.<br />
           <span className="text-gradient-cyan-purple">Get Recruiter-Ready.</span>
-        </h1>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-sm)', marginTop: 'var(--space-3)', padding: '0 var(--space-2)' }}>
-          Pick a track, code every day late at night, and maintain a public learning streak. Prove your skills, get visible.
+        </h2>
+        
+        <p className="text-muted" style={{
+          fontSize: 'var(--fs-sm)',
+          maxWidth: '350px',
+          margin: '0 auto var(--space-6)',
+          lineHeight: '1.5',
+          padding: '0 var(--space-2)'
+        }}>
+          Pick your track, write clean code every night, and project your progress live to prospective recruiters via Git and LinkedIn.
         </p>
-        <div style={{ marginTop: 'var(--space-6)' }}>
-          <button onClick={() => navigate('/dashboard')} className="btn btn-primary" style={{ padding: 'var(--space-4) var(--space-8)' }}>
-            Start the Challenge Free 🚀
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', width: '100%', maxWidth: '280px', margin: '0 auto' }}>
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            className="btn btn-primary anim-pulse-glow"
+            style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--fs-sm)' }}
+          >
+            Start Your Coding Streak 🔥
           </button>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+            Free for Indian College Students · Limited Seats
+          </span>
         </div>
-      </div>
+      </section>
 
-      {/* Proof of Work Concept Section */}
-      <div className="glass-panel" style={{ marginBottom: 'var(--space-6)' }}>
-        <h3 style={{ fontSize: 'var(--fs-md)', borderBottom: '1px solid var(--border-space)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
-          How it Works
+      {/* Value Proposition Grid */}
+      <section style={{ marginBottom: 'var(--space-8)' }}>
+        <h3 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--fs-md)',
+          textAlign: 'center',
+          marginBottom: 'var(--space-4)'
+        }}>
+          The 3-Step Proof of Work
         </h3>
+        
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <div style={{ color: 'var(--color-cyan)', fontSize: '20px' }}>📦</div>
-            <div>
-              <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: '2px' }}>1. Get Your Daily Task</h4>
-              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>Every day, a new coding exercise is unlocked on your track dashboard.</p>
+          {valueProps.map((prop, index) => (
+            <div key={index} className="glass-panel" style={{
+              display: 'flex',
+              gap: 'var(--space-3)',
+              background: 'rgba(12, 13, 20, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.04)'
+            }}>
+              <div style={{
+                fontSize: 'var(--fs-lg)',
+                fontWeight: '800',
+                color: 'var(--color-cyan)',
+                fontFamily: 'var(--font-display)',
+                background: 'rgba(0, 242, 254, 0.05)',
+                minWidth: '40px',
+                height: '40px',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'inset 0 0 10px rgba(0, 242, 254, 0.1)'
+              }}>
+                {prop.step}
+              </div>
+              <div>
+                <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', marginBottom: '2px', color: 'var(--color-text-primary)' }}>
+                  {prop.title}
+                </h4>
+                <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4' }}>
+                  {prop.desc}
+                </p>
+              </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Track Selector Section */}
+      <section style={{ marginBottom: 'var(--space-8)' }}>
+        <h3 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--fs-md)',
+          textAlign: 'center',
+          marginBottom: 'var(--space-4)'
+        }}>
+          Select Your Coding Track
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {tracks.map((track) => (
+            <div 
+              key={track.id} 
+              className={`card card-cosmic card-interactive ${track.borderClass}`}
+              style={{ padding: 'var(--space-4)' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <span style={{ fontSize: '24px' }}>{track.icon}</span>
+                <span className="badge badge-cyan" style={{ fontSize: '9px', textTransform: 'uppercase' }}>
+                  {track.level}
+                </span>
+              </div>
+              <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                {track.name}
+              </h4>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--space-3)', lineHeight: '1.3' }}>
+                {track.desc}
+              </p>
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="btn btn-secondary" 
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '11px',
+                  borderColor: track.accent,
+                  color: track.accent,
+                  background: 'rgba(255, 255, 255, 0.01)',
+                  width: 'auto',
+                  alignSelf: 'flex-start'
+                }}
+              >
+                Explore Track Syllabus
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section className="glass-panel" style={{
+        marginBottom: 'var(--space-8)',
+        background: 'linear-gradient(135deg, rgba(12, 13, 20, 0.8) 0%, rgba(6, 6, 9, 0.8) 100%)',
+        textAlign: 'center',
+        padding: 'var(--space-5)'
+      }}>
+        <h3 style={{ fontSize: 'var(--fs-sm)', textTransform: 'uppercase', color: 'var(--color-cyan)', letterSpacing: '1px', marginBottom: 'var(--space-4)' }}>
+          Alumni Outcomes
+        </h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+          <div style={{ borderRight: '1px solid var(--border-space)', paddingRight: 'var(--space-2)' }}>
+            <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', color: '#fff' }}>8.5 LPA</div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Avg Packages</div>
           </div>
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <div style={{ color: 'var(--color-purple)', fontSize: '20px' }}>💻</div>
-            <div>
-              <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: '2px' }}>2. Commit Code to GitHub</h4>
-              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>Write the code, push to your public repo, and submit the commit link.</p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <div style={{ color: 'var(--color-emerald)', fontSize: '20px' }}>📢</div>
-            <div>
-              <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: '2px' }}>3. Post Learning on LinkedIn</h4>
-              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>Share your technical insights in a brief daily LinkedIn post to build authority.</p>
-            </div>
+          <div>
+            <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', color: 'var(--color-emerald)' }}>32 LPA</div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Highest Package</div>
           </div>
         </div>
-      </div>
 
-      {/* Tracks Carousel/List */}
-      <h3 style={{ fontSize: 'var(--fs-md)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-display)' }}>Select Your Track</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-8)' }}>
-        {tracks.map((track, i) => (
-          <div key={i} className="card card-cosmic card-interactive" style={{ padding: 'var(--space-4)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-              <span style={{ fontSize: 'var(--fs-lg)' }}>{track.icon}</span>
-              <span className="badge badge-cyan">{track.level}</span>
-            </div>
-            <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold' }}>{track.name}</h4>
-            <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>{track.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Trust & Testimonial Stats */}
-      <div style={{ textAlign: 'center', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-4)' }}>
-        <h3 style={{ fontSize: 'var(--fs-md)', color: 'var(--color-text-primary)' }}>Why Indian Students Trust Us</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
-          <div className="glass-panel" style={{ padding: 'var(--space-3)' }}>
-            <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', color: 'var(--color-cyan)' }}>15,000+</div>
-            <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--color-text-secondary)' }}>Students Joined</div>
-          </div>
-          <div className="glass-panel" style={{ padding: 'var(--space-3)' }}>
-            <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', color: 'var(--color-purple)' }}>250+</div>
-            <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--color-text-secondary)' }}>Recruiters Hiring</div>
+        <div style={{ borderTop: '1px solid var(--border-space)', marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)' }}>
+          <div style={{ fontSize: 'var(--fs-xxl)', fontWeight: 'bold', color: '#fff', lineHeight: '1' }}>94.2%</div>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+            Success Placement Rate
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Recruiter Trust Section */}
+      <section style={{ marginBottom: 'var(--space-8)' }}>
+        <h3 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--fs-sm)',
+          textAlign: 'center',
+          color: 'var(--color-text-secondary)',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          marginBottom: 'var(--space-3)'
+        }}>
+          Recruiters Hiring Our Graduates
+        </h3>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 'var(--space-2)'
+        }}>
+          {recruiterLogos.map((logo, index) => (
+            <div 
+              key={index}
+              className="glass-panel"
+              style={{
+                padding: 'var(--space-2) var(--space-1)',
+                textAlign: 'center',
+                background: 'rgba(255,255,255,0.01)',
+                border: '1px solid rgba(255,255,255,0.03)',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '38px'
+              }}
+            >
+              <span style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                color: 'var(--color-text-secondary)',
+                letterSpacing: '0.5px'
+              }}>
+                {logo.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section style={{ marginBottom: 'var(--space-10)' }}>
+        <h3 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--fs-md)',
+          textAlign: 'center',
+          marginBottom: 'var(--space-4)'
+        }}>
+          Placed Students Say
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {testimonials.map((test, index) => (
+            <div 
+              key={index}
+              className={`card card-cosmic ${test.borderClass}`}
+              style={{ padding: 'var(--space-4)' }}
+            >
+              <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <span style={{ fontSize: '24px' }}>{test.avatar}</span>
+                <div>
+                  <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', margin: 0 }}>{test.name}</h4>
+                  <p className="text-muted" style={{ fontSize: '9px', margin: 0 }}>{test.college} · {test.role}</p>
+                </div>
+              </div>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4', fontStyle: 'italic' }}>
+                "{test.text}"
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Final Call to Action */}
+      <section className="glass-panel" style={{
+        textAlign: 'center',
+        background: 'linear-gradient(135deg, rgba(127, 0, 255, 0.1) 0%, rgba(0, 242, 254, 0.08) 100%)',
+        border: '1px solid rgba(0, 242, 254, 0.2)',
+        padding: 'var(--space-6)',
+        marginBottom: 'var(--space-6)'
+      }}>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', fontWeight: 'bold', marginBottom: 'var(--space-2)' }}>
+          Ready to Make the Commitment?
+        </h3>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--space-5)', lineHeight: '1.4' }}>
+          Take the 60-day sandbox challenge. Build credentials, establish streaks, get visible. Start coding tonight.
+        </p>
+        <button 
+          onClick={() => navigate('/dashboard')} 
+          className="btn btn-primary"
+          style={{ width: '100%', maxWidth: '240px', margin: '0 auto' }}
+        >
+          Enroll in Sandbox Free 🚀
+        </button>
+      </section>
+
+      {/* Footer copyright */}
+      <footer style={{ textAlign: 'center', padding: 'var(--space-4) 0', borderTop: '1px solid var(--border-space)' }}>
+        <p className="text-muted" style={{ fontSize: '9px', letterSpacing: '0.5px' }}>
+          © 2026 ABTalks Coding Sandbox. All rights reserved.
+        </p>
+      </footer>
+
     </div>
   );
 }
