@@ -1,5 +1,73 @@
 import React, { useState, useEffect } from 'react';
 
+// --- REUSABLE UI COMPONENTS ---
+
+const Card = ({ children, variant = 'cosmic', style = {}, ...props }) => {
+  const className = variant === 'glowing-cyan' 
+    ? 'card card-cosmic card-glowing-cyan' 
+    : (variant === 'glowing-rose' ? 'card card-cosmic card-glowing-rose' : 'card card-cosmic');
+  
+  return (
+    <div className={className} style={{ padding: 'var(--space-4)', ...style }} {...props}>
+      {children}
+    </div>
+  );
+};
+
+const Badge = ({ children, type = 'cyan', style = {} }) => {
+  const className = `badge badge-${type}`;
+  return (
+    <span className={className} style={style}>
+      {children}
+    </span>
+  );
+};
+
+const InputField = ({ label, icon, ...props }) => {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-secondary)', fontWeight: '500' }}>
+        <span>{icon}</span>
+        {label}
+      </label>
+      <input className="glass-input" {...props} />
+    </div>
+  );
+};
+
+const ChecklistItem = ({ text, checked, onChange }) => {
+  return (
+    <label style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 'var(--space-2)',
+      fontSize: '11px',
+      color: 'var(--color-text-secondary)',
+      cursor: 'pointer',
+      padding: '4px 0',
+      userSelect: 'none'
+    }}>
+      <input 
+        type="checkbox" 
+        checked={checked}
+        onChange={onChange}
+        style={{
+          width: '14px',
+          height: '14px',
+          accentColor: 'var(--color-cyan)',
+          cursor: 'pointer'
+        }}
+      />
+      <span style={{ textDecoration: checked ? 'line-through' : 'none', opacity: checked ? 0.6 : 1, transition: 'all var(--transition-fast)' }}>
+        {text}
+      </span>
+    </label>
+  );
+};
+
+
+// --- MAIN CHALLENGE DAY ROUTE COMPONENT ---
+
 export default function ChallengeDay({ dayId, navigate }) {
   const [task, setTask] = useState(null);
   const [githubUrl, setGithubUrl] = useState('');
@@ -9,6 +77,14 @@ export default function ChallengeDay({ dayId, navigate }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Checklist interactive state
+  const [checklist, setChecklist] = useState([
+    { id: 1, text: "Configure workspace parameters", done: false },
+    { id: 2, text: "Build responsiveness on 390px mobile viewport", done: false },
+    { id: 3, text: "Validate API fetching and handle exception returns", done: false },
+    { id: 4, text: "Review clean code principles before committing", done: false }
+  ]);
 
   const fetchTaskDetails = async () => {
     try {
@@ -32,6 +108,12 @@ export default function ChallengeDay({ dayId, navigate }) {
     fetchTaskDetails();
   }, [dayId]);
 
+  const toggleChecklist = (id) => {
+    setChecklist(prev => prev.map(item => 
+      item.id === id ? { ...item, done: !item.done } : item
+    ));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -51,9 +133,8 @@ export default function ChallengeDay({ dayId, navigate }) {
       if (data.success) {
         setSuccessMsg(data.message);
         setShowConfetti(true);
-        // Refetch details to update state to COMPLETED
         await fetchTaskDetails();
-        // Hide success message/confetti after a delay and auto navigate
+        
         setTimeout(() => {
           setShowConfetti(false);
           navigate('/dashboard');
@@ -82,7 +163,7 @@ export default function ChallengeDay({ dayId, navigate }) {
     return (
       <div style={{ padding: 'var(--space-4)', textAlign: 'center' }}>
         <h3 style={{ color: 'var(--color-rose)' }}>Day Coordinates Not Found</h3>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--space-4)' }}>This challenge day is currently locked or doesn't exist yet.</p>
+        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--space-4)' }}>This challenge day is locked.</p>
         <button onClick={() => navigate('/dashboard')} className="btn btn-secondary">Go to Dashboard</button>
       </div>
     );
@@ -90,6 +171,15 @@ export default function ChallengeDay({ dayId, navigate }) {
 
   const isCompleted = task.status === 'COMPLETED';
   const isMissed = task.status === 'MISSED';
+
+  // Dynamic estimated durations
+  const estimatedDuration = dayId <= 15 ? "90 mins" : (dayId <= 40 ? "2 hours" : "3 hours");
+
+  // Dynamic resources list
+  const resources = [
+    { name: "Official Documentation Guides", link: "https://docs.github.com", icon: "📖" },
+    { name: "Clean Code & Refactoring Best Practices", link: "https://javascript.info", icon: "💻" }
+  ];
 
   return (
     <div className="anim-fade-in" style={{ padding: 'var(--space-4)', position: 'relative' }}>
@@ -99,7 +189,7 @@ export default function ChallengeDay({ dayId, navigate }) {
         <div style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(6, 6, 9, 0.95)',
+          background: 'rgba(6, 6, 9, 0.96)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -111,13 +201,13 @@ export default function ChallengeDay({ dayId, navigate }) {
         }}>
           <span style={{ fontSize: '64px', animation: 'float 2s infinite' }}>🎉</span>
           <h2 className="text-gradient-cyan-purple" style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', marginTop: 'var(--space-4)' }}>Day Completed!</h2>
-          <p style={{ color: 'var(--color-emerald)', fontSize: 'var(--fs-base)', marginTop: 'var(--space-2)' }}>{successMsg}</p>
+          <p style={{ color: 'var(--color-emerald)', fontSize: 'var(--fs-base)', marginTop: 'var(--space-2)', fontWeight: '500' }}>{successMsg}</p>
           <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--space-8)' }}>Redirecting back to dashboard...</p>
         </div>
       )}
 
-      {/* Header and Back navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-6)' }}>
+      {/* Navigation Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
         <button 
           onClick={() => navigate('/dashboard')} 
           style={{
@@ -132,116 +222,179 @@ export default function ChallengeDay({ dayId, navigate }) {
           ←
         </button>
         <h2 style={{ fontSize: 'var(--fs-md)', margin: 0, fontWeight: 'bold' }}>Challenge Day {task.dayId}</h2>
-        <span className="badge badge-cyan" style={{ marginLeft: 'auto' }}>{task.difficulty}</span>
+        <Badge type="cyan" style={{ marginLeft: 'auto' }}>{task.difficulty}</Badge>
       </div>
 
-      {/* Task Guidelines card */}
-      <div className="glass-panel" style={{ marginBottom: 'var(--space-4)' }}>
-        <h3 style={{ fontSize: 'var(--fs-base)', marginBottom: 'var(--space-2)' }}>{task.title}</h3>
+      {/* Task Details Card */}
+      <Card style={{ marginBottom: 'var(--space-4)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+          <h3 style={{ fontSize: 'var(--fs-base)', margin: 0, fontWeight: 'bold' }}>{task.title}</h3>
+          <Badge type="purple">{estimatedDuration}</Badge>
+        </div>
         <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4', marginBottom: 'var(--space-4)' }}>
           {task.description}
         </p>
 
-        <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-cyan)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Acceptance Criteria
+        {/* Challenge Objective description */}
+        <h4 style={{ fontSize: '11px', color: 'var(--color-cyan)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Challenge Objective
         </h4>
-        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start', fontSize: '11px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-space)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: 'var(--space-2)', 
+          alignItems: 'flex-start', 
+          fontSize: '11px', 
+          background: 'rgba(255,255,255,0.01)', 
+          border: '1px solid var(--border-space)', 
+          borderRadius: 'var(--radius-sm)', 
+          padding: 'var(--space-2)' 
+        }}>
           <span style={{ color: 'var(--color-cyan)' }}>👉</span>
-          <p className="text-muted">{task.challenge}</p>
+          <p className="text-muted" style={{ margin: 0 }}>{task.challenge}</p>
         </div>
-      </div>
+      </Card>
+
+      {/* Checklist section */}
+      <Card style={{ marginBottom: 'var(--space-4)' }}>
+        <h4 style={{ fontSize: '11px', color: 'var(--color-purple)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Task Checklist
+        </h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {checklist.map(item => (
+            <ChecklistItem 
+              key={item.id}
+              text={item.text}
+              checked={item.done}
+              onChange={() => toggleChecklist(item.id)}
+            />
+          ))}
+        </div>
+      </Card>
+
+      {/* Resources Section */}
+      <Card style={{ marginBottom: 'var(--space-4)' }}>
+        <h4 style={{ fontSize: '11px', color: 'var(--color-emerald)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Recommended Resources
+        </h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {resources.map((res, index) => (
+            <a 
+              key={index}
+              href={res.link}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '11px',
+                color: 'var(--color-cyan)',
+                textDecoration: 'none',
+                padding: '4px',
+                background: 'rgba(255,255,255,0.01)',
+                border: '1px solid var(--border-space)',
+                borderRadius: 'var(--radius-sm)',
+                transition: 'all var(--transition-fast)'
+              }}
+            >
+              <span>{res.icon}</span>
+              <span>{res.name}</span>
+              <span style={{ marginLeft: 'auto', fontSize: '9px' }}>↗</span>
+            </a>
+          ))}
+        </div>
+      </Card>
 
       {/* Submission Status Alerts */}
       {isCompleted && (
-        <div className="card-cosmic card-glowing-emerald" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+        <Card variant="glowing-emerald" style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
           <div style={{ fontSize: '24px' }}>✅</div>
           <div>
-            <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-emerald)', marginBottom: '2px' }}>Day Complete!</h4>
-            <p className="text-muted" style={{ fontSize: '11px' }}>Your daily proof of work has been submitted and verified.</p>
+            <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-emerald)', marginBottom: '2px', fontWeight: 'bold' }}>Day Complete!</h4>
+            <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>Your daily proof of work has been submitted and verified.</p>
           </div>
-        </div>
+        </Card>
       )}
 
       {isMissed && (
-        <div className="card-cosmic card-glowing-rose" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-lg)', display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+        <Card variant="glowing-rose" style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
           <div style={{ fontSize: '24px' }}>❄️</div>
           <div>
-            <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-rose)', marginBottom: '2px' }}>Missed Deadline!</h4>
-            <p className="text-muted" style={{ fontSize: '11px' }}>You missed the midnight window. However, you can submit code now to reactivate your streak and recover!</p>
+            <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-rose)', marginBottom: '2px', fontWeight: 'bold' }}>Deadline Missed!</h4>
+            <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>You missed the midnight window. Submit code now to reactivate streak.</p>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Submission Form */}
-      <div className="glass-panel" style={{ position: 'relative' }}>
-        <h3 style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--space-3)' }}>
+      <Card style={{ marginBottom: 'var(--space-6)' }}>
+        <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-display)', fontWeight: 'bold' }}>
           {isCompleted ? 'Your Submissions' : 'Submit Proof of Work'}
-        </h3>
+        </h4>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           
           {/* GitHub Input */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-1)', fontWeight: '500' }}>
-              GitHub Repository or Commit Link
-            </label>
-            <input 
-              type="url" 
-              placeholder="e.g. https://github.com/username/project/commit/..."
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
-              disabled={isCompleted || submitting}
-              className="glass-input"
-              required
-            />
-          </div>
+          <InputField 
+            label="GitHub Repository or Commit Link"
+            icon="🐙"
+            type="url" 
+            placeholder="e.g. https://github.com/username/repo/commit/..."
+            value={githubUrl}
+            onChange={(e) => setGithubUrl(e.target.value)}
+            disabled={isCompleted || submitting}
+            required
+          />
 
           {/* LinkedIn Input */}
-          <div>
-            <label style={{ display: 'block', fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-1)', fontWeight: '500' }}>
-              LinkedIn Learning Post Link
-            </label>
-            <input 
-              type="url" 
-              placeholder="e.g. https://linkedin.com/posts/username-activity-..."
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              disabled={isCompleted || submitting}
-              className="glass-input"
-              required
-            />
-          </div>
+          <InputField 
+            label="LinkedIn Learning Post Link"
+            icon="🔗"
+            type="url" 
+            placeholder="e.g. https://linkedin.com/posts/username-activity-..."
+            value={linkedinUrl}
+            onChange={(e) => setLinkedinUrl(e.target.value)}
+            disabled={isCompleted || submitting}
+            required
+          />
 
-          {/* Messages */}
+          {/* Error Message */}
           {errorMsg && (
-            <div style={{ color: 'var(--color-rose)', fontSize: '11px', padding: '6px', background: 'rgba(255,51,102,0.05)', borderRadius: '4px', border: '1px solid rgba(255,51,102,0.1)' }}>
+            <div style={{ 
+              color: 'var(--color-rose)', 
+              fontSize: '11px', 
+              padding: '6px 10px', 
+              background: 'rgba(255,51,102,0.05)', 
+              borderRadius: 'var(--radius-sm)', 
+              border: '1px solid rgba(255,51,102,0.1)' 
+            }}>
               ⚠️ {errorMsg}
             </div>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Action */}
           {!isCompleted ? (
             <button 
               type="submit" 
               disabled={submitting}
               className="btn btn-emerald"
-              style={{ marginTop: 'var(--space-2)' }}
+              style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}
             >
-              {submitting ? 'Verifying Commits...' : 'Submit Verification 🚀'}
+              {submitting ? 'Verifying Coordinates...' : 'Submit Verification 🚀'}
             </button>
           ) : (
             <button 
               type="button" 
               onClick={() => navigate('/dashboard')}
               className="btn btn-secondary"
-              style={{ marginTop: 'var(--space-2)' }}
+              style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}
             >
               Back to Dashboard
             </button>
           )}
 
         </form>
-      </div>
+      </Card>
 
     </div>
   );
