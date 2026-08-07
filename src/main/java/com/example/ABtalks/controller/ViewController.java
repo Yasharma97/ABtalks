@@ -9,16 +9,16 @@ public class ViewController {
 
     @GetMapping("/")
     public String index() {
-        return "forward:/index.html";
+        return "index";
     }
 
     @GetMapping("/dashboard")
     public String dashboard() {
-        return "forward:/index.html";
+        return "index";
     }
 
     @GetMapping("/day/{id}")
     public String day(@PathVariable String id) {
-        return "forward:/index.html";
+        return "index";
     }
 }

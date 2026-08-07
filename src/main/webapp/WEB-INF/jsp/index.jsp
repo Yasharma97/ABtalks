@@ -1,3 +1,4 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!doctype html>
 <html lang="en">
   <head>
@@ -5,7 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
-    <script type="module" crossorigin src="/assets/index-DnOOPXBl.js"></script>
+    <script type="module" crossorigin src="/assets/index-wkezO36Z.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-DbBaMFC5.css">
   </head>
   <body>

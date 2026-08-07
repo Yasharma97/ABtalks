@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Dashboard({ navigate }) {
-  const [profile, setProfile] = useState(null);
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+export default function Dashboard({ profile, tasks, switchProfileState, navigate }) {
   // List of all achievements in the system to determine locked vs unlocked states
   const allAchievements = [
     { name: "First Commit", desc: "Unlocked on your first coding submission", icon: "🥈" },
@@ -14,58 +10,33 @@ export default function Dashboard({ navigate }) {
     { name: "Late-Night Owl", desc: "Pushed a commit between 11 PM and 2 AM", icon: "🦉" }
   ];
 
-  // Fetch profile and tasks from Spring Boot Backend REST APIs
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const profRes = await fetch('/api/profile');
-      const profData = await profRes.json();
-      setProfile(profData);
+  // Mock peer activities matching requested formats
+  const peerActivities = [
+    { name: "Sneha", college: "AKTU", action: "completed Day 12!" },
+    { name: "Aman", college: "IMS", action: "completed today tasks!" },
+    { name: "Rahul", college: "AKTU", action: "completed Day 12!" },
+    { name: "Karan", college: "IMS", action: "completed today tasks!" },
+    { name: "Priya", college: "LPU", action: "completed Day 12!" },
+    { name: "Amit", college: "IMS", action: "completed today tasks!" }
+  ];
 
-      const tasksRes = await fetch('/api/tasks');
-      const tasksData = await tasksRes.json();
-      setTasks(tasksData);
-    } catch (err) {
-      console.error("Error fetching mock data from Spring Boot API: ", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [activityIndex, setActivityIndex] = useState(0);
+  const [isActivityVisible, setIsActivityVisible] = useState(true);
 
+  // Cycle through peer activity events (faster transitions)
   useEffect(() => {
-    fetchData();
+    const interval = setInterval(() => {
+      setIsActivityVisible(false);
+      setTimeout(() => {
+        setActivityIndex((prev) => (prev + 1) % peerActivities.length);
+        setIsActivityVisible(true);
+      }, 300); // time to slide down before switching text
+    }, 2500); // transition every 2.5 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
-  const switchProfileState = async (state) => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/profile/select?state=${state}`, {
-        method: 'POST'
-      });
-      const updatedProf = await res.json();
-      setProfile(updatedProf);
-
-      // Refetch tasks as they change depending on profile
-      const tasksRes = await fetch('/api/tasks');
-      const tasksData = await tasksRes.json();
-      setTasks(tasksData);
-    } catch (err) {
-      console.error("Error switching profile state: ", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading || !profile) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh', gap: 'var(--space-4)' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(0, 242, 254, 0.2)', borderTopColor: 'var(--color-cyan)', borderRadius: '50%', animation: 'pulseGlow 1.5s infinite linear' }}></div>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>Syncing with Cosmic Server...</p>
-      </div>
-    );
-  }
-
-  // Find today's task (first task that is PENDING, or default to first LOCKED, or if all completed, day 60)
+  // Find today's task
   const todayTask = tasks.find(t => t.status === 'PENDING') || tasks.find(t => t.status === 'LOCKED') || tasks[tasks.length - 1];
 
   // Calculations for circular streak progress
@@ -75,10 +46,12 @@ export default function Dashboard({ navigate }) {
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (streakPercent / 100) * circumference;
 
+  const currentPeer = peerActivities[activityIndex];
+
   return (
-    <div className="anim-fade-in" style={{ padding: 'var(--space-4)' }}>
+    <div className="anim-fade-in" style={{ padding: 'var(--space-4)', paddingBottom: '40px' }}>
       
-      {/* 🛠️ PROFILE STATE SWITCHER (FOR TESTING EDGE CASES) */}
+      {/* 🛠️ PROFILE STATE SWITCHER (FOR TESTING EDGE CASES - LOCAL STATE) */}
       <div style={{
         background: 'rgba(255, 255, 255, 0.02)',
         border: '1px dashed var(--border-space)',
@@ -90,7 +63,7 @@ export default function Dashboard({ navigate }) {
         zIndex: 10
       }}>
         <div style={{ fontSize: '10px', color: 'var(--color-cyan)', fontWeight: 'bold', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Test Edge Cases (Profile States)
+          Test Edge Cases (Local State Switching)
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
           <button 
@@ -153,29 +126,50 @@ export default function Dashboard({ navigate }) {
         </div>
       </div>
 
-      {/* 2. Active Peers Widget */}
+      {/* 2. Active Peers Live Co-working Space Ticker (Inline Widget) */}
       <div style={{
-        background: 'linear-gradient(90deg, rgba(0, 242, 254, 0.06) 0%, rgba(127, 0, 255, 0.06) 100%)',
-        border: '1px solid rgba(0, 242, 254, 0.12)',
+        background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.06) 0%, rgba(127, 0, 255, 0.04) 100%)',
+        border: '1px solid rgba(0, 242, 254, 0.15)',
         borderRadius: 'var(--radius-sm)',
-        padding: '6px 12px',
+        padding: '10px 14px',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 'var(--space-2)',
-        marginBottom: 'var(--space-4)'
+        gap: '4px',
+        marginBottom: 'var(--space-4)',
+        textAlign: 'center',
+        boxShadow: 'inset 0 0 10px rgba(0, 242, 254, 0.05)'
       }}>
-        <span style={{ 
-          width: '8px', 
-          height: '8px', 
-          background: 'var(--color-emerald)', 
-          borderRadius: '50%', 
-          boxShadow: '0 0 8px var(--color-emerald)', 
-          display: 'inline-block' 
-        }}></span>
-        <span style={{ fontSize: '11px', fontWeight: '500', color: 'var(--color-text-primary)' }}>
-          248 Indian students are coding right now!
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ 
+            width: '6px', 
+            height: '6px', 
+            background: 'var(--color-emerald)', 
+            borderRadius: '50%', 
+            boxShadow: '0 0 8px var(--color-emerald)', 
+            animation: 'pulseGlow 1.5s infinite linear',
+            display: 'inline-block' 
+          }}></span>
+          <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
+            248 Indian students are coding right now!
+          </span>
+        </div>
+
+        {/* Live transition text inline under the main text */}
+        {currentPeer && (
+          <div style={{
+            fontSize: '10.5px',
+            color: 'var(--color-cyan)',
+            fontWeight: '500',
+            opacity: isActivityVisible ? 0.95 : 0,
+            transform: `translateY(${isActivityVisible ? '0' : '3px'})`,
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            minHeight: '15px'
+          }}>
+            ⚡ {currentPeer.name} from {currentPeer.college} {currentPeer.action}
+          </div>
+        )}
       </div>
 
       {/* 3. Current Streak & Edge Case Banners */}
@@ -223,7 +217,7 @@ export default function Dashboard({ navigate }) {
             <>
               <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: '2px', color: 'var(--color-emerald)' }}>Keep the Fire Lit! 🔥</h4>
               <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.3', margin: 0 }}>
-                18-day hot streak maintained. Keep pushing commits to stay visible to recruiters.
+                {profile.currentStreak}-day hot streak maintained. Keep pushing commits to stay visible to recruiters.
               </p>
             </>
           )}
@@ -268,10 +262,10 @@ export default function Dashboard({ navigate }) {
         </div>
       )}
 
-      {/* 5. Progress Map Grid */}
+      {/* 5. Progress Map Grid (All days clickable) */}
       <div style={{ marginBottom: 'var(--space-6)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
-          <h3 style={{ fontSize: 'var(--fs-sm)', fontFamily: 'var(--font-display)', margin: 0 }}>Challenge Calendar</h3>
+          <h3 style={{ fontSize: 'var(--fs-sm)', fontFamily: 'var(--font-display)', margin: 0 }}>Interactive 60-Day Grid</h3>
           <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
             {profile.completedCount}/60 Days Complete
           </span>
@@ -280,16 +274,16 @@ export default function Dashboard({ navigate }) {
         {/* Legend */}
         <div style={{ display: 'flex', justifyContent: 'space-around', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-space)', borderRadius: 'var(--radius-sm)', padding: '6px', marginBottom: 'var(--space-3)', fontSize: '9px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '8px', height: '8px', background: 'rgba(5, 255, 196, 0.15)', border: '1px solid var(--color-emerald)', borderRadius: '2px' }}></span> Done
+            <span style={{ width: '8px', height: '8px', background: 'rgba(5, 255, 196, 0.15)', border: '1px solid var(--color-emerald)', borderRadius: '2px' }}></span> Completed
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '8px', height: '8px', background: 'rgba(0, 242, 254, 0.08)', border: '1px solid var(--color-cyan)', borderRadius: '2px' }}></span> Active
+            <span style={{ width: '8px', height: '8px', background: 'rgba(0, 242, 254, 0.08)', border: '1px solid var(--color-cyan)', borderRadius: '2px' }}></span> Current
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ width: '8px', height: '8px', background: 'rgba(255, 51, 102, 0.15)', border: '1px solid var(--color-rose)', borderRadius: '2px' }}></span> Missed
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ width: '8px', height: '8px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-space)', borderRadius: '2px' }}></span> Locked
+            <span style={{ width: '8px', height: '8px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-space)', borderRadius: '2px' }}></span> Upcoming
           </div>
         </div>
 
@@ -299,32 +293,38 @@ export default function Dashboard({ navigate }) {
             let bg = 'rgba(255, 255, 255, 0.02)';
             let borderColor = 'var(--border-space)';
             let color = 'var(--color-text-secondary)';
-            let isClickable = true;
             let glow = 'none';
+            let statusLabel = 'Upcoming';
 
             if (task.status === 'COMPLETED') {
               bg = 'rgba(5, 255, 196, 0.1)';
               borderColor = 'var(--color-emerald)';
               color = 'var(--color-emerald)';
+              statusLabel = 'Completed';
             } else if (task.status === 'PENDING') {
               bg = 'rgba(0, 242, 254, 0.06)';
               borderColor = 'var(--color-cyan)';
               color = 'var(--color-cyan)';
               glow = '0 0 8px rgba(0, 242, 254, 0.2)';
+              statusLabel = 'Current';
             } else if (task.status === 'MISSED') {
               bg = 'rgba(255, 51, 102, 0.1)';
               borderColor = 'var(--color-rose)';
               color = 'var(--color-rose)';
+              statusLabel = 'Missed';
             } else {
-              isClickable = false;
+              // LOCKED / UPCOMING
+              bg = 'rgba(255, 255, 255, 0.01)';
+              borderColor = 'rgba(255, 255, 255, 0.04)';
               color = 'var(--color-text-muted)';
+              statusLabel = 'Upcoming';
             }
 
             return (
               <button
                 key={task.dayId}
-                disabled={!isClickable}
                 onClick={() => navigate(`/day/${task.dayId}`)}
+                title={`Day ${task.dayId}: ${task.title} (${statusLabel})`}
                 style={{
                   height: '40px',
                   background: bg,
@@ -333,7 +333,7 @@ export default function Dashboard({ navigate }) {
                   color: color,
                   fontWeight: task.status === 'PENDING' ? 'bold' : 'normal',
                   fontSize: 'var(--fs-xs)',
-                  cursor: isClickable ? 'pointer' : 'not-allowed',
+                  cursor: 'pointer',
                   boxShadow: glow,
                   display: 'flex',
                   alignItems: 'center',
@@ -348,7 +348,7 @@ export default function Dashboard({ navigate }) {
         </div>
       </div>
 
-      {/* 6. Achievement Section (Locked vs Unlocked achievements check) */}
+      {/* 6. Achievement Section */}
       <div className="glass-panel" style={{ padding: 'var(--space-4)', background: 'rgba(12, 13, 20, 0.3)' }}>
         <h3 style={{ fontSize: 'var(--fs-sm)', borderBottom: '1px solid var(--border-space)', paddingBottom: 'var(--space-2)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-display)' }}>
           Achievements & Badges

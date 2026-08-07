@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 // --- REUSABLE UI COMPONENTS ---
 
 const Card = ({ children, variant = 'cosmic', style = {}, ...props }) => {
-  const className = variant === 'glowing-cyan' 
-    ? 'card card-cosmic card-glowing-cyan' 
+  const className = variant === 'glowing-emerald' 
+    ? 'card card-cosmic card-glowing-emerald' 
     : (variant === 'glowing-rose' ? 'card card-cosmic card-glowing-rose' : 'card card-cosmic');
   
   return (
@@ -68,11 +68,12 @@ const ChecklistItem = ({ text, checked, onChange }) => {
 
 // --- MAIN CHALLENGE DAY ROUTE COMPONENT ---
 
-export default function ChallengeDay({ dayId, navigate }) {
-  const [task, setTask] = useState(null);
+export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigate }) {
+  // Find task in local state array passed by parent
+  const task = tasks.find(t => t.dayId === dayId);
+
   const [githubUrl, setGithubUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -86,27 +87,15 @@ export default function ChallengeDay({ dayId, navigate }) {
     { id: 4, text: "Review clean code principles before committing", done: false }
   ]);
 
-  const fetchTaskDetails = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/tasks/${dayId}`);
-      const data = await res.json();
-      setTask(data);
-      
-      if (data) {
-        setGithubUrl(data.githubUrl || '');
-        setLinkedinUrl(data.linkedinUrl || '');
-      }
-    } catch (err) {
-      console.error("Error fetching task details: ", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Sync input fields when task parameters update
   useEffect(() => {
-    fetchTaskDetails();
-  }, [dayId]);
+    if (task) {
+      setGithubUrl(task.githubUrl || '');
+      setLinkedinUrl(task.linkedinUrl || '');
+      setErrorMsg('');
+      setSuccessMsg('');
+    }
+  }, [dayId, task]);
 
   const toggleChecklist = (id) => {
     setChecklist(prev => prev.map(item => 
@@ -114,50 +103,29 @@ export default function ChallengeDay({ dayId, navigate }) {
     ));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
     setSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/tasks/${dayId}/submit`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ githubUrl, linkedinUrl })
-      });
-      const data = await res.json();
+    // Call state update handler in App.jsx
+    const result = onSubmitSubmission(dayId, githubUrl, linkedinUrl);
 
-      if (data.success) {
-        setSuccessMsg(data.message);
-        setShowConfetti(true);
-        await fetchTaskDetails();
-        
-        setTimeout(() => {
-          setShowConfetti(false);
-          navigate('/dashboard');
-        }, 3000);
-      } else {
-        setErrorMsg(data.message);
-      }
-    } catch (err) {
-      setErrorMsg("Failed to submit. Check if Spring Boot server is running on port 8080.");
-      console.error(err);
-    } finally {
-      setSubmitting(false);
+    if (result.success) {
+      setSuccessMsg(result.message);
+      setShowConfetti(true);
+      
+      // Delay navigation back to dashboard to allow success animation to show
+      setTimeout(() => {
+        setShowConfetti(false);
+        navigate('/dashboard');
+      }, 3000);
+    } else {
+      setErrorMsg(result.message);
     }
+    setSubmitting(false);
   };
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh', gap: 'var(--space-4)' }}>
-        <div style={{ width: '40px', height: '40px', border: '3px solid rgba(0, 242, 254, 0.2)', borderTopColor: 'var(--color-cyan)', borderRadius: '50%', animation: 'pulseGlow 1.5s infinite linear' }}></div>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>Loading Task Coordinates...</p>
-      </div>
-    );
-  }
 
   if (!task) {
     return (
