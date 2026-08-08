@@ -58,7 +58,17 @@ export default function App() {
   };
 
   // Derive active progress depending on Edge Case Preview state
-  let activeProgress = { ...student.progress };
+  const baseProgress = isRegistered 
+    ? student.progress 
+    : {
+        currentDay: 19,
+        completedDays: Array.from({ length: 18 }, (_, i) => i + 1),
+        missedDays: [],
+        currentStreak: 18,
+        previousStreak: 18
+      };
+
+  let activeProgress = { ...baseProgress };
 
   if (activePreviewState === "newbie") {
     activeProgress = {
@@ -117,8 +127,16 @@ export default function App() {
     profileState = "steady";
   }
 
+  const activeIdentity = isRegistered 
+    ? student.identity 
+    : {
+        name: "Aarav Sharma",
+        college: "Delhi Technological University (DTU)",
+        track: "Frontend Web Track"
+      };
+
   const profile = {
-    identity: { ...student.identity },
+    identity: { ...activeIdentity },
     progress: {
       ...activeProgress,
       currentStreak,
@@ -228,20 +246,6 @@ export default function App() {
       );
     }
 
-    // Force redirection back to landing page if user is not registered
-    if (!isRegistered) {
-      setTimeout(() => navigate('/'), 0);
-      return (
-        <LandingPage 
-          navigate={navigate} 
-          isRegistered={isRegistered}
-          setIsRegistered={setIsRegistered}
-          setProfile={handleSignupProfile}
-          setTasks={() => {}}
-        />
-      );
-    }
-
     if (currentPath === '/dashboard') {
       return (
         <Dashboard 
@@ -319,15 +323,7 @@ export default function App() {
         </button>
 
         <button 
-          onClick={() => {
-            if (!isRegistered) {
-              // Trigger signup alert or redirect
-              navigate('/');
-              window.dispatchEvent(new CustomEvent('trigger-registration'));
-            } else {
-              navigate('/dashboard');
-            }
-          }} 
+          onClick={() => navigate('/dashboard')} 
           className={`bottom-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
         >
@@ -338,14 +334,7 @@ export default function App() {
         </button>
 
         <button 
-          onClick={() => {
-            if (!isRegistered) {
-              navigate('/');
-              window.dispatchEvent(new CustomEvent('trigger-registration'));
-            } else {
-              navigate('/day/12');
-            }
-          }} 
+          onClick={() => navigate('/day/12')} 
           className={`bottom-nav-item ${currentPath.startsWith('/day/') ? 'active' : ''}`}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
         >

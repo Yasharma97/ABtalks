@@ -2544,3 +2544,136 @@ After implementation, test at:
 Do not modify / or /day/12.
 
 add the missing prompt in prompt.md
+
+Fix the demo-access and registration-gating behavior in App.jsx for the ABTalks hackathon.
+
+IMPORTANT:
+Do not redesign the UI.
+Do not modify LandingPage, Dashboard, ChallengeDay styling, mock data, or existing visual design.
+Only modify the application state/routing logic necessary for this requirement.
+
+CURRENT PROBLEM:
+The app currently redirects unauthenticated users from /dashboard and /day/12 back to the landing/registration page because of the isRegistered localStorage gate.
+
+This causes a problem for hackathon judging because judges will open these routes directly in a fresh browser with empty localStorage:
+
+/
+/dashboard
+/day/12
+
+REQUIRED BEHAVIOR:
+
+1. Landing route
+/
+- Continue showing the existing landing page.
+- Existing signup/registration flow must continue working.
+- When a user signs up, save their identity and initialize their progress exactly as the current implementation does.
+
+2. Dashboard route
+/dashboard
+- MUST be directly accessible in a fresh browser with no localStorage.
+- If a registered user exists in localStorage:
+    show that user's identity and progress.
+- If no registered user exists:
+    show a realistic read-only DEMO student dashboard using the existing mock/demo data.
+- Do NOT redirect to /.
+- Do NOT display the registration form on /dashboard.
+
+3. Challenge Day route
+/day/12
+- MUST be directly accessible in a fresh browser with no localStorage.
+- If a registered user exists:
+    use that user's identity/progress.
+- If no registered user exists:
+    show a realistic DEMO Day 12 experience using the existing mock task data.
+- Do NOT redirect to /.
+- Do NOT display the registration form on /day/12.
+
+4. Registration behavior
+- Keep the existing localStorage keys:
+    abtalks_is_registered
+    abtalks_student_identity
+    abtalks_student_progress
+- Do not remove localStorage persistence.
+- Do not create authentication.
+- Do not add a backend.
+- Do not change the signup UI.
+
+5. Demo data
+Use the existing mock data and existing student/demo state.
+Do not introduce random names such as Aarav Sharma or Priyanka Patel for a newly registered user.
+A newly registered user must always use the identity they entered during signup.
+Demo identity should only be used when there is NO registered user.
+
+6. Edge-case preview controls
+Preserve the existing Newbie / Steady / Missed preview functionality.
+These are demonstration/testing states and should NOT overwrite the real user's identity or localStorage progress.
+When "real" mode is selected, display the actual registered user's data.
+
+7. Important separation
+There must be a clear distinction between:
+
+REAL USER:
+localStorage contains abtalks_is_registered === "true"
+→ use saved identity and saved progress.
+
+DEMO USER:
+no registered user exists
+→ use mock/demo identity and mock/demo progress only for viewing the required routes.
+
+Do not write demo data into the real user's localStorage.
+
+8. Route behavior
+Preserve the existing lightweight routing system.
+Do not add React Router.
+Preserve:
+/
+/dashboard
+/day/:dayId
+
+9. Refresh behavior
+After opening:
+/dashboard
+/day/12
+
+and refreshing the page, the correct screen must remain accessible.
+
+10. Final validation
+Test these cases:
+
+CASE A — Fresh browser:
+localStorage empty.
+Open /dashboard.
+Expected: demo dashboard, NOT registration page.
+
+CASE B — Fresh browser:
+localStorage empty.
+Open /day/12.
+Expected: demo Day 12 page, NOT registration page.
+
+CASE C — Signup:
+Open /.
+Register as:
+Name: Rohit
+College: [entered college]
+Track: [selected track]
+Then open /dashboard.
+Expected: Rohit's identity and zero-day initial progress.
+
+CASE D — Refresh:
+Refresh /dashboard.
+Expected: Rohit's data remains.
+
+CASE E — Day page:
+Open /day/12.
+Expected: Day 12 task loads correctly.
+
+CASE F — No identity contamination:
+Register as Rohit.
+The dashboard must NOT suddenly display Aarav Sharma, Priyanka Patel, or another mock student's identity.
+
+After implementation, summarize:
+- which routing/state logic was changed
+- how fresh-browser demo mode works
+- how registered-user mode works
+- confirm that existing UI components were not redesigned.
