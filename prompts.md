@@ -2341,3 +2341,206 @@ Report:
 Do not modify / or /day/12 unless absolutely required for this data-flow fix.
 
 analyze the output according to my problem statement and give me what is needs to be improve and what i need to change completely
+
+Fix the dashboard's student-state architecture before making any visual changes.
+
+IMPORTANT:
+The currently logged-in/mock user must remain the SAME user across every dashboard state.
+
+Example:
+If the user signs up as "Rohit Sharma", every state must continue displaying:
+- Rohit Sharma
+- the same college
+- the same selected track
+- the same profile identity
+
+Do NOT replace the user with Aarav, Priyanka, Rahul, or any other mock student when switching states.
+
+The Edge Case Preview is ONLY a state simulator for the SAME user.
+
+Implement these states:
+
+1. REAL USER
+Use the actual signed-in/mock account data.
+
+2. NEW
+Simulate the same user's first day:
+- streak = 0
+- completedDays = []
+- missedDays = []
+- currentDay = 1
+- today's task = Day 1
+- achievements = locked
+- completion = 0%
+
+3. ACTIVE
+Simulate the SAME user after successfully completing 18 consecutive days:
+- streak = 18
+- completedDays = [1..18]
+- missedDays = []
+- currentDay = 19
+- completion = 18/60
+- achievements calculated from this state
+- today's task = Day 19
+
+4. MISSED
+Simulate the SAME user after completing Days 1–11 and missing Day 12:
+- previousStreak = 11
+- currentStreak = 0
+- completedDays = [1..11]
+- missedDays = [12]
+- currentDay = 13
+- completion = 11/60
+- today's task = Day 13
+
+IMPORTANT DATA RULE:
+Never hardcode unrelated student names into these states.
+
+The only difference between New, Active and Missed should be the student's progress/state, not their identity.
+
+Derive all dashboard values from ONE normalized student state:
+
+student
+├── identity
+│   ├── name
+│   ├── college
+│   └── track
+├── progress
+│   ├── currentDay
+│   ├── completedDays
+│   ├── missedDays
+│   ├── currentStreak
+│   └── previousStreak
+└── achievements
+
+The calendar, streak widget, completion percentage, achievements, today's task, level/XP and progress indicators MUST all derive from the same state.
+
+Do not allow contradictory values such as:
+- streak = 0 while 11 days are marked completed and no missed day exists
+- currentDay = 6 while the state says the user is on Day 19
+- completion percentage not matching completedDays
+- achievements that do not match the streak
+
+After implementation, test all four states and verify that the identity remains Rohit Sharma while only the progress changes.
+
+Do not redesign the UI yet.
+Fix the data/state architecture only.
+
+Continue
+
+Now optimize ONLY /dashboard for the required 390px mobile viewport.
+
+Do not change the underlying student-state logic.
+
+GOAL:
+The dashboard should feel like a focused "Tonight's Mission" screen, not a desktop dashboard compressed onto mobile.
+
+At 390px:
+
+1. TOP AREA
+Show:
+- student name
+- track
+- compact level/XP
+
+Keep this area minimal.
+
+2. PRIMARY FOCUS — TODAY'S MISSION
+Make today's task the dominant element.
+
+Show:
+- Day number
+- task title
+- difficulty
+- 1–2 line description
+- primary CTA: "Start Today's Challenge"
+
+This should be the first major action after the header.
+
+3. STREAK
+Place the streak directly below/near today's mission.
+
+For example:
+
+🔥 18 day streak
+"You're on a roll. Keep tonight's proof alive."
+
+For a new user:
+
+🌱 Start your streak
+"Complete Day 1 tonight."
+
+For a missed user:
+
+❄️ Streak paused
+"Day 12 was missed. Complete today's task to restart."
+
+4. PROGRESS
+Replace the large desktop-style 60-day grid with a compact mobile-friendly progress visualization.
+
+Show:
+18 / 60 days
+30% complete
+
+Then provide a compact timeline/calendar that can be scanned without overwhelming the screen.
+
+5. ACHIEVEMENTS
+Show only the most relevant 2–3 achievements initially.
+
+Example:
+🏆 First Commit
+🔥 7-Day Warrior
+🔒 14-Day Overlord
+
+Allow the rest to be revealed progressively rather than displaying a large wall of locked badges.
+
+6. EDGE CASE PREVIEW
+This is a developer/testing feature, not the student's main experience.
+
+Move it into a clearly labeled:
+"Demo / Edge Case Preview"
+
+section or collapsible developer panel.
+
+Do not let it dominate the dashboard screenshot.
+
+7. LATE-NIGHT CO-WORKING
+Keep the peer activity indicator compact.
+
+Example:
+
+● 248 students coding tonight
+"Someone just completed Day 11."
+
+It should reinforce the night-coding identity without becoming another large card.
+
+8. BOTTOM NAVIGATION
+Ensure the fixed bottom navigation never overlaps important content.
+
+Add appropriate bottom safe-area/padding.
+
+9. MOBILE RULES
+At 390px:
+- no horizontal overflow
+- no desktop two-column layout
+- no squeezed cards
+- no overlapping elements
+- minimum 44px touch targets
+- 16–20px horizontal page padding
+- readable text
+- comfortable vertical spacing
+
+10. IMPORTANT
+Do not solve the problem by simply reducing font sizes.
+
+Reorganize the information hierarchy for mobile.
+
+After implementation, test at:
+390px
+430px
+768px
+1024px
+
+Do not modify / or /day/12.
+
+add the missing prompt in prompt.md

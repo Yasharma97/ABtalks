@@ -13,23 +13,24 @@ export default function App() {
     return localStorage.getItem('abtalks_is_registered') === 'true';
   });
 
-  // Decoupled currentUser identity state
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('abtalks_current_user');
-    return saved ? JSON.parse(saved) : {
-      name: "Rohit Sharma",
-      college: "Delhi Technological University (DTU)",
-      track: "Frontend Web Track"
-    };
-  });
-
-  // Decoupled actual student challenge progress
-  const [actualProgress, setActualProgress] = useState(() => {
-    const saved = localStorage.getItem('abtalks_actual_progress');
-    return saved ? JSON.parse(saved) : {
-      completedDays: [],
-      missedDays: [],
-      currentDay: 1
+  // Decoupled student state containing identity and progress (normalized model)
+  const [student, setStudent] = useState(() => {
+    const savedIdentity = localStorage.getItem('abtalks_student_identity');
+    const savedProgress = localStorage.getItem('abtalks_student_progress');
+    
+    return {
+      identity: savedIdentity ? JSON.parse(savedIdentity) : {
+        name: "Rohit Sharma",
+        college: "Delhi Technological University (DTU)",
+        track: "Frontend Web Track"
+      },
+      progress: savedProgress ? JSON.parse(savedProgress) : {
+        currentDay: 1,
+        completedDays: [],
+        missedDays: [],
+        currentStreak: 0,
+        previousStreak: 0
+      }
     };
   });
 
@@ -39,9 +40,9 @@ export default function App() {
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem('abtalks_is_registered', isRegistered);
-    localStorage.setItem('abtalks_current_user', JSON.stringify(currentUser));
-    localStorage.setItem('abtalks_actual_progress', JSON.stringify(actualProgress));
-  }, [isRegistered, currentUser, actualProgress]);
+    localStorage.setItem('abtalks_student_identity', JSON.stringify(student.identity));
+    localStorage.setItem('abtalks_student_progress', JSON.stringify(student.progress));
+  }, [isRegistered, student]);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -57,21 +58,31 @@ export default function App() {
   };
 
   // Derive active progress depending on Edge Case Preview state
-  let activeProgress = { ...actualProgress };
+  let activeProgress = { ...student.progress };
 
   if (activePreviewState === "newbie") {
-    activeProgress = { completedDays: [], missedDays: [], currentDay: 1 };
+    activeProgress = {
+      completedDays: [],
+      missedDays: [],
+      currentDay: 1,
+      currentStreak: 0,
+      previousStreak: 0
+    };
   } else if (activePreviewState === "steady") {
     activeProgress = {
       completedDays: Array.from({ length: 18 }, (_, i) => i + 1),
       missedDays: [],
-      currentDay: 19
+      currentDay: 19,
+      currentStreak: 18,
+      previousStreak: 18
     };
   } else if (activePreviewState === "missed") {
     activeProgress = {
       completedDays: Array.from({ length: 11 }, (_, i) => i + 1),
       missedDays: [12],
-      currentDay: 13
+      currentDay: 13,
+      currentStreak: 0,
+      previousStreak: 11
     };
   }
 
@@ -91,12 +102,12 @@ export default function App() {
   const xp = completedCount * 100;
   const level = Math.floor(xp / 500) + 1;
 
-  // Deriving active badges list based on milestones
-  const badges = [];
-  if (completedCount >= 1) badges.push("First Commit");
-  if (currentStreak >= 7) badges.push("7-Day Warrior");
-  if (currentStreak >= 14) badges.push("14-Day Overlord");
-  if (completedCount >= 10) badges.push("Early Bird");
+  // Deriving active badges/achievements based on milestones
+  const achievements = [];
+  if (completedCount >= 1) achievements.push("First Commit");
+  if (currentStreak >= 7) achievements.push("7-Day Warrior");
+  if (currentStreak >= 14) achievements.push("14-Day Overlord");
+  if (completedCount >= 10) achievements.push("Early Bird");
 
   // Determine active profileState slug
   let profileState = "newbie";
@@ -107,21 +118,24 @@ export default function App() {
   }
 
   const profile = {
-    ...currentUser,
-    currentStreak,
-    longestStreak,
-    completedCount,
-    missedCount,
-    level,
-    xp,
-    badges,
-    profileState,
+    identity: { ...student.identity },
+    progress: {
+      ...activeProgress,
+      currentStreak,
+      previousStreak: activePreviewState === "missed" ? 11 : activeProgress.previousStreak,
+      longestStreak,
+      completedCount,
+      missedCount,
+      level,
+      xp,
+      profileState
+    },
+    achievements,
     activePreviewState // Pass preview identifier down
   };
 
   // Client-side profile state switching loader
   const switchProfileState = (state) => {
-    // If state is 'real', return to Rohit's actual progress
     if (state === "real") {
       setActivePreviewState("real");
     } else if (state === "newbie" || state === "steady" || state === "missed") {
@@ -131,31 +145,39 @@ export default function App() {
 
   // Client-side signup registration setProfile proxy
   const handleSignupProfile = (newProfile) => {
-    setCurrentUser({
-      name: newProfile.name,
-      college: newProfile.college,
-      track: newProfile.track
-    });
-    setActualProgress({
-      completedDays: [],
-      missedDays: [],
-      currentDay: 1
+    setStudent({
+      identity: {
+        name: newProfile.name,
+        college: newProfile.college,
+        track: newProfile.track
+      },
+      progress: {
+        completedDays: [],
+        missedDays: [],
+        currentDay: 1,
+        currentStreak: 0,
+        previousStreak: 0
+      },
+      achievements: []
     });
     setActivePreviewState("real");
   };
 
   // Service method to advance time/day for real user testing
   const onAdvanceDay = () => {
-    setActualProgress(prev => {
-      const missed = [...prev.missedDays];
+    setStudent(prev => {
+      const missed = [...prev.progress.missedDays];
       // If the current day is not completed, it is marked as missed
-      if (!prev.completedDays.includes(prev.currentDay)) {
-        missed.push(prev.currentDay);
+      if (!prev.progress.completedDays.includes(prev.progress.currentDay)) {
+        missed.push(prev.progress.currentDay);
       }
       return {
         ...prev,
-        missedDays: missed,
-        currentDay: prev.currentDay + 1
+        progress: {
+          ...prev.progress,
+          missedDays: missed,
+          currentDay: prev.progress.currentDay + 1
+        }
       };
     });
   };
@@ -169,20 +191,23 @@ export default function App() {
       return { success: false, message: "Please enter a valid LinkedIn post URL containing 'linkedin.com'." };
     }
 
-    setActualProgress(prev => {
-      const completed = prev.completedDays.includes(dayId)
-        ? prev.completedDays
-        : [...prev.completedDays, dayId];
+    setStudent(prev => {
+      const completed = prev.progress.completedDays.includes(dayId)
+        ? prev.progress.completedDays
+        : [...prev.progress.completedDays, dayId];
 
-      let nextDay = prev.currentDay;
-      if (dayId === prev.currentDay) {
-        nextDay = prev.currentDay + 1;
+      let nextDay = prev.progress.currentDay;
+      if (dayId === prev.progress.currentDay) {
+        nextDay = prev.progress.currentDay + 1;
       }
 
       return {
         ...prev,
-        completedDays: completed,
-        currentDay: nextDay
+        progress: {
+          ...prev.progress,
+          completedDays: completed,
+          currentDay: nextDay
+        }
       };
     });
 
@@ -265,7 +290,7 @@ export default function App() {
       }
       constellationOpacity = 0.35; // Keep it extremely subtle on task details pages
     } else if (currentPath === '/dashboard') {
-      constellationDay = profile.completedCount || 0;
+      constellationDay = profile.progress.completedCount || 0;
       constellationOpacity = 0.85; // Full visible depth on dashboard
     }
   }
