@@ -78,6 +78,7 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiParticles, setConfettiParticles] = useState([]);
 
   // Checklist interactive state
   const [checklist, setChecklist] = useState([
@@ -103,6 +104,20 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
     ));
   };
 
+  const generateConfetti = () => {
+    const colors = ['#00f2fe', '#7f00ff', '#05ffc4', '#ff3366', '#ffd700'];
+    const particles = Array.from({ length: 45 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 80 + 10}%`,
+      xShift: `${(Math.random() - 0.5) * 160}px`,
+      size: `${Math.random() * 6 + 6}px`,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      duration: `${Math.random() * 0.8 + 1.2}s`,
+      isCircle: Math.random() > 0.4
+    }));
+    setConfettiParticles(particles);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -114,6 +129,7 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
 
     if (result.success) {
       setSuccessMsg(result.message);
+      generateConfetti();
       setShowConfetti(true);
       
       // Delay navigation back to dashboard to allow success animation to show
@@ -150,9 +166,9 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
   ];
 
   return (
-    <div className="anim-fade-in" style={{ padding: 'var(--space-4)', position: 'relative' }}>
+    <div style={{ padding: 'var(--space-4)', position: 'relative' }}>
       
-      {/* Confetti Celebration Overlay */}
+      {/* 🚀 LIGHTWEIGHT CSS CONFETTI CELEBRATION OVERLAY */}
       {showConfetti && (
         <div style={{
           position: 'fixed',
@@ -164,13 +180,37 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
           justifyContent: 'center',
           zIndex: 1000,
           textAlign: 'center',
-          padding: 'var(--space-6)',
-          animation: 'fadeIn 0.3s forwards'
+          padding: 'var(--space-6)'
         }}>
-          <span style={{ fontSize: '64px', animation: 'float 2s infinite' }}>🎉</span>
-          <h2 className="text-gradient-cyan-purple" style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', marginTop: 'var(--space-4)' }}>Day Completed!</h2>
-          <p style={{ color: 'var(--color-emerald)', fontSize: 'var(--fs-base)', marginTop: 'var(--space-2)', fontWeight: '500' }}>{successMsg}</p>
-          <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginTop: 'var(--space-8)' }}>Redirecting back to dashboard...</p>
+          {/* Confetti particles */}
+          {confettiParticles.map(p => (
+            <div 
+              key={p.id}
+              className="confetti-particle"
+              style={{
+                '--left-start': p.left,
+                '--x-shift': p.xShift,
+                '--size': p.size,
+                '--color': p.color,
+                '--duration': p.duration,
+                borderRadius: p.isCircle ? '50%' : '0'
+              }}
+            />
+          ))}
+
+          <span style={{ fontSize: '56px', animation: 'float 2s infinite' }}>🎉</span>
+          
+          <h2 className="text-gradient-cyan-purple" style={{ fontSize: 'var(--fs-xl)', fontWeight: '900', marginTop: 'var(--space-4)', marginBottom: '4px' }}>
+            Day {task.dayId} Complete!
+          </h2>
+          
+          <p style={{ color: 'var(--color-emerald)', fontSize: 'var(--fs-base)', fontWeight: 'bold', margin: '0 0 var(--space-6)' }}>
+            Streak Maintained 🔥
+          </p>
+
+          <p className="text-muted" style={{ fontSize: 'var(--fs-xs)' }}>
+            Redirecting to sandbox dashboard coordinates...
+          </p>
         </div>
       )}
 
@@ -193,176 +233,198 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
         <Badge type="cyan" style={{ marginLeft: 'auto' }}>{task.difficulty}</Badge>
       </div>
 
-      {/* Task Details Card */}
-      <Card style={{ marginBottom: 'var(--space-4)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
-          <h3 style={{ fontSize: 'var(--fs-base)', margin: 0, fontWeight: 'bold' }}>{task.title}</h3>
-          <Badge type="purple">{estimatedDuration}</Badge>
-        </div>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4', marginBottom: 'var(--space-4)' }}>
-          {task.description}
-        </p>
-
-        {/* Challenge Objective description */}
-        <h4 style={{ fontSize: '11px', color: 'var(--color-cyan)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Challenge Objective
-        </h4>
-        <div style={{ 
-          display: 'flex', 
-          gap: 'var(--space-2)', 
-          alignItems: 'flex-start', 
-          fontSize: '11px', 
-          background: 'rgba(255,255,255,0.01)', 
-          border: '1px solid var(--border-space)', 
-          borderRadius: 'var(--radius-sm)', 
-          padding: 'var(--space-2)' 
-        }}>
-          <span style={{ color: 'var(--color-cyan)' }}>👉</span>
-          <p className="text-muted" style={{ margin: 0 }}>{task.challenge}</p>
-        </div>
-      </Card>
-
-      {/* Checklist section */}
-      <Card style={{ marginBottom: 'var(--space-4)' }}>
-        <h4 style={{ fontSize: '11px', color: 'var(--color-purple)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Task Checklist
-        </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {checklist.map(item => (
-            <ChecklistItem 
-              key={item.id}
-              text={item.text}
-              checked={item.done}
-              onChange={() => toggleChecklist(item.id)}
-            />
-          ))}
-        </div>
-      </Card>
-
-      {/* Resources Section */}
-      <Card style={{ marginBottom: 'var(--space-4)' }}>
-        <h4 style={{ fontSize: '11px', color: 'var(--color-emerald)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Recommended Resources
-        </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {resources.map((res, index) => (
-            <a 
-              key={index}
-              href={res.link}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '11px',
-                color: 'var(--color-cyan)',
-                textDecoration: 'none',
-                padding: '4px',
-                background: 'rgba(255,255,255,0.01)',
-                border: '1px solid var(--border-space)',
-                borderRadius: 'var(--radius-sm)',
-                transition: 'all var(--transition-fast)'
-              }}
-            >
-              <span>{res.icon}</span>
-              <span>{res.name}</span>
-              <span style={{ marginLeft: 'auto', fontSize: '9px' }}>↗</span>
-            </a>
-          ))}
-        </div>
-      </Card>
-
-      {/* Submission Status Alerts */}
-      {isCompleted && (
-        <Card variant="glowing-emerald" style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <div style={{ fontSize: '24px' }}>✅</div>
-          <div>
-            <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-emerald)', marginBottom: '2px', fontWeight: 'bold' }}>Day Complete!</h4>
-            <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>Your daily proof of work has been submitted and verified.</p>
-          </div>
-        </Card>
-      )}
-
-      {isMissed && (
-        <Card variant="glowing-rose" style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <div style={{ fontSize: '24px' }}>❄️</div>
-          <div>
-            <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-rose)', marginBottom: '2px', fontWeight: 'bold' }}>Deadline Missed!</h4>
-            <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>You missed the midnight window. Submit code now to reactivate streak.</p>
-          </div>
-        </Card>
-      )}
-
-      {/* Submission Form */}
-      <Card style={{ marginBottom: 'var(--space-6)' }}>
-        <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-display)', fontWeight: 'bold' }}>
-          {isCompleted ? 'Your Submissions' : 'Submit Proof of Work'}
-        </h4>
+      {/* Responsive Split Columns for Challenge Detail and submission validation */}
+      <div className="grid-responsive-2" style={{ marginBottom: 'var(--space-6)' }}>
         
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        {/* Left Column: Coordinates details, checks, reference readings */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           
-          {/* GitHub Input */}
-          <InputField 
-            label="GitHub Repository or Commit Link"
-            icon="🐙"
-            type="url" 
-            placeholder="e.g. https://github.com/username/repo/commit/..."
-            value={githubUrl}
-            onChange={(e) => setGithubUrl(e.target.value)}
-            disabled={isCompleted || submitting}
-            required
-          />
-
-          {/* LinkedIn Input */}
-          <InputField 
-            label="LinkedIn Learning Post Link"
-            icon="🔗"
-            type="url" 
-            placeholder="e.g. https://linkedin.com/posts/username-activity-..."
-            value={linkedinUrl}
-            onChange={(e) => setLinkedinUrl(e.target.value)}
-            disabled={isCompleted || submitting}
-            required
-          />
-
-          {/* Error Message */}
-          {errorMsg && (
-            <div style={{ 
-              color: 'var(--color-rose)', 
-              fontSize: '11px', 
-              padding: '6px 10px', 
-              background: 'rgba(255,51,102,0.05)', 
-              borderRadius: 'var(--radius-sm)', 
-              border: '1px solid rgba(255,51,102,0.1)' 
-            }}>
-              ⚠️ {errorMsg}
-            </div>
+          {/* Submission Status Alerts */}
+          {isCompleted && (
+            <Card variant="glowing-emerald" style={{ display: 'flex', gap: 'var(--space-3)', margin: 0 }}>
+              <div style={{ fontSize: '24px' }}>✅</div>
+              <div>
+                <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-emerald)', marginBottom: '2px', fontWeight: 'bold' }}>Day Complete!</h4>
+                <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>Your daily proof of work has been submitted and verified.</p>
+              </div>
+            </Card>
           )}
 
-          {/* Submit Action */}
-          {!isCompleted ? (
-            <button 
-              type="submit" 
-              disabled={submitting}
-              className="btn btn-emerald"
-              style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}
-            >
-              {submitting ? 'Verifying Coordinates...' : 'Submit Verification 🚀'}
-            </button>
-          ) : (
-            <button 
-              type="button" 
-              onClick={() => navigate('/dashboard')}
-              className="btn btn-secondary"
-              style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}
-            >
-              Back to Dashboard
-            </button>
+          {isMissed && (
+            <Card variant="glowing-rose" style={{ display: 'flex', gap: 'var(--space-3)', margin: 0 }}>
+              <div style={{ fontSize: '24px' }}>❄️</div>
+              <div>
+                <h4 style={{ fontSize: 'var(--fs-sm)', color: 'var(--color-rose)', marginBottom: '2px', fontWeight: 'bold' }}>Deadline Missed!</h4>
+                <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>You missed the midnight window. Submit code now to reactivate streak.</p>
+              </div>
+            </Card>
           )}
 
-        </form>
-      </Card>
+          {/* Task Details Card */}
+          <div className="anim-card-entry delay-1">
+            <Card style={{ margin: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                <h3 style={{ fontSize: 'var(--fs-base)', margin: 0, fontWeight: 'bold' }}>{task.title}</h3>
+                <Badge type="purple">{estimatedDuration}</Badge>
+              </div>
+              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4', marginBottom: 'var(--space-4)' }}>
+                {task.description}
+              </p>
+
+              {/* Challenge Objective description */}
+              <h4 style={{ fontSize: '11px', color: 'var(--color-cyan)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Challenge Objective
+              </h4>
+              <div style={{ 
+                display: 'flex', 
+                gap: 'var(--space-2)', 
+                alignItems: 'flex-start', 
+                fontSize: '11px', 
+                background: 'rgba(255,255,255,0.01)', 
+                border: '1px solid var(--border-space)', 
+                borderRadius: 'var(--radius-sm)', 
+                padding: 'var(--space-2)' 
+              }}>
+                <span style={{ color: 'var(--color-cyan)' }}>👉</span>
+                <p className="text-muted" style={{ margin: 0 }}>{task.challenge}</p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Checklist card */}
+          <div className="anim-card-entry delay-2">
+            <Card style={{ margin: 0 }}>
+              <h4 style={{ fontSize: '11px', color: 'var(--color-purple)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Task Checklist
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {checklist.map(item => (
+                  <ChecklistItem 
+                    key={item.id}
+                    text={item.text}
+                    checked={item.done}
+                    onChange={() => toggleChecklist(item.id)}
+                  />
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* Resources card */}
+          <div className="anim-card-entry delay-2">
+            <Card style={{ margin: 0 }}>
+              <h4 style={{ fontSize: '11px', color: 'var(--color-emerald)', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Recommended Resources
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {resources.map((res, index) => (
+                  <a 
+                    key={index}
+                    href={res.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontSize: '11px',
+                      color: 'var(--color-cyan)',
+                      textDecoration: 'none',
+                      padding: '4px',
+                      background: 'rgba(255,255,255,0.01)',
+                      border: '1px solid var(--border-space)',
+                      borderRadius: 'var(--radius-sm)',
+                      transition: 'all var(--transition-fast)'
+                    }}
+                  >
+                    <span>{res.icon}</span>
+                    <span>{res.name}</span>
+                    <span style={{ marginLeft: 'auto', fontSize: '9px' }}>↗</span>
+                  </a>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+        </div>
+
+        {/* Right Column: Submission Form */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          
+          <div className="anim-card-entry delay-3">
+            <Card style={{ margin: 0 }}>
+              <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-display)', fontWeight: 'bold' }}>
+                {isCompleted ? 'Your Submissions' : 'Submit Proof of Work'}
+              </h4>
+              
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                
+                {/* GitHub Input */}
+                <InputField 
+                  label="GitHub Repository or Commit Link"
+                  icon="🐙"
+                  type="url" 
+                  placeholder="e.g. https://github.com/username/repo/commit/..."
+                  value={githubUrl}
+                  onChange={(e) => setGithubUrl(e.target.value)}
+                  disabled={isCompleted || submitting}
+                  required
+                />
+
+                {/* LinkedIn Input */}
+                <InputField 
+                  label="LinkedIn Learning Post Link"
+                  icon="🔗"
+                  type="url" 
+                  placeholder="e.g. https://linkedin.com/posts/username-activity-..."
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  disabled={isCompleted || submitting}
+                  required
+                />
+
+                {/* Error Message */}
+                {errorMsg && (
+                  <div style={{ 
+                    color: 'var(--color-rose)', 
+                    fontSize: '11px', 
+                    padding: '6px 10px', 
+                    background: 'rgba(255,51,102,0.05)', 
+                    borderRadius: 'var(--radius-sm)', 
+                    border: '1px solid rgba(255,51,102,0.1)' 
+                  }}>
+                    ⚠️ {errorMsg}
+                  </div>
+                )}
+
+                {/* Submit Action */}
+                {!isCompleted ? (
+                  <button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="btn btn-emerald"
+                    style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}
+                  >
+                    {submitting ? 'Verifying Coordinates...' : 'Submit Verification 🚀'}
+                  </button>
+                ) : (
+                  <button 
+                    type="button" 
+                    onClick={() => navigate('/dashboard')}
+                    className="btn btn-secondary"
+                    style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}
+                  >
+                    Back to Dashboard
+                  </button>
+                )}
+
+              </form>
+            </Card>
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
   );

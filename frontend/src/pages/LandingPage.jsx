@@ -1,6 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { generateTasksForState, baseTasks } from '../mockData';
 
-export default function LandingPage({ navigate }) {
+export default function LandingPage({ navigate, isRegistered, setIsRegistered, setProfile, setTasks }) {
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regCollege, setRegCollege] = useState('');
+  const [regTrack, setRegTrack] = useState('Frontend Web Track');
+  const [validationError, setValidationError] = useState('');
+
+  // Listen to navigation gate events from bottom bar triggers
+  useEffect(() => {
+    const handleRegisterTrigger = () => {
+      setShowRegisterModal(true);
+    };
+    window.addEventListener('trigger-registration', handleRegisterTrigger);
+    return () => window.removeEventListener('trigger-registration', handleRegisterTrigger);
+  }, []);
+
+  const handleStartAction = () => {
+    if (isRegistered) {
+      navigate('/dashboard');
+    } else {
+      setShowRegisterModal(true);
+    }
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    setValidationError('');
+
+    if (!regName.trim()) {
+      setValidationError("Please enter your name coordinates.");
+      return;
+    }
+    if (!regCollege.trim()) {
+      setValidationError("Please enter your university coordinates.");
+      return;
+    }
+
+    // Set custom registered profile
+    setProfile({
+      name: regName.trim(),
+      college: regCollege.trim(),
+      track: regTrack,
+      currentStreak: 0,
+      longestStreak: 0,
+      completedCount: 0,
+      missedCount: 0,
+      level: 1,
+      xp: 0,
+      badges: [],
+      profileState: "newbie" // Starts fresh
+    });
+
+    // Populate calendar tasks list for newbie state
+    setTasks(generateTasksForState('newbie', baseTasks));
+    setIsRegistered(true);
+    setShowRegisterModal(false);
+    navigate('/dashboard');
+  };
+
   const tracks = [
     {
       id: "frontend",
@@ -81,7 +140,7 @@ export default function LandingPage({ navigate }) {
   ];
 
   return (
-    <div className="anim-fade-in" style={{ padding: 'var(--space-4)', position: 'relative' }}>
+    <div style={{ padding: 'var(--space-4)', position: 'relative' }}>
       
       {/* Decorative cosmic nebula light source */}
       <div style={{
@@ -131,21 +190,21 @@ export default function LandingPage({ navigate }) {
           </div>
         </div>
         <button 
-          onClick={() => navigate('/dashboard')} 
+          onClick={handleStartAction} 
           className="btn btn-secondary" 
           style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--fs-xs)', borderRadius: 'var(--radius-sm)' }}
         >
-          Dashboard →
+          {isRegistered ? 'Dashboard →' : 'Register'}
         </button>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero Section with staggered card entrance animations */}
       <section style={{ textAlign: 'center', marginBottom: 'var(--space-10)', position: 'relative', zIndex: 5 }}>
-        <div className="badge badge-cyan anim-float" style={{ marginBottom: 'var(--space-4)', padding: '6px 12px', fontSize: '10px' }}>
+        <div className="badge badge-cyan anim-card-entry delay-1" style={{ marginBottom: 'var(--space-4)', padding: '6px 12px', fontSize: '10px' }}>
           ✨ The Ultimate 60-Day Student Coding Challenge
         </div>
         
-        <h2 style={{
+        <h2 className="anim-card-entry delay-2" style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'var(--fs-xxl)',
           lineHeight: '1.2',
@@ -156,31 +215,106 @@ export default function LandingPage({ navigate }) {
           <span className="text-gradient-cyan-purple">Get Recruiter-Ready.</span>
         </h2>
         
-        <p className="text-muted" style={{
+        <p className="text-muted anim-card-entry delay-3" style={{
           fontSize: 'var(--fs-sm)',
           maxWidth: '350px',
-          margin: '0 auto var(--space-6)',
+          margin: '0 auto var(--space-5)',
           lineHeight: '1.5',
           padding: '0 var(--space-2)'
         }}>
           Pick your track, write clean code every night, and project your progress live to prospective recruiters via Git and LinkedIn.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', width: '100%', maxWidth: '280px', margin: '0 auto' }}>
-          <button 
-            onClick={() => navigate('/dashboard')} 
-            className="btn btn-primary anim-pulse-glow"
-            style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--fs-sm)' }}
-          >
-            Start Your Coding Streak 🔥
-          </button>
-          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-            Free for Indian College Students · Limited Seats
-          </span>
+        {/* 🚀 FIRST APPEARANCE: Inline Registration Form (if not registered) */}
+        <div className="anim-card-entry delay-4" style={{ width: '100%', maxWidth: '340px', margin: '0 auto' }}>
+          {!isRegistered ? (
+            <div 
+              className="card card-cosmic card-glowing-cyan"
+              style={{
+                padding: 'var(--space-4)',
+                textAlign: 'left',
+                background: 'rgba(12, 13, 20, 0.85)',
+                border: '1px solid rgba(0, 242, 254, 0.3)',
+                boxShadow: 'var(--glow-cyan)'
+              }}
+            >
+              <h3 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', marginBottom: 'var(--space-1)', textAlign: 'center', color: '#fff' }}>
+                Quick Initialize Sandbox
+              </h3>
+              <p className="text-muted" style={{ fontSize: '10px', textAlign: 'center', marginBottom: 'var(--space-3)', lineHeight: '1.3' }}>
+                Enter your details coordinates to unlock `/dashboard` and start submitting tasks.
+              </p>
+
+              <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Full Name</label>
+                  <input 
+                    type="text" 
+                    className="glass-input" 
+                    placeholder="e.g. Rahul Sharma"
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    style={{ padding: '8px 10px', fontSize: '11px' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>University / College</label>
+                  <input 
+                    type="text" 
+                    className="glass-input" 
+                    placeholder="e.g. AKTU, IMS, DTU"
+                    value={regCollege}
+                    onChange={(e) => setRegCollege(e.target.value)}
+                    style={{ padding: '8px 10px', fontSize: '11px' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Tech Track</label>
+                  <select 
+                    className="glass-input"
+                    value={regTrack}
+                    onChange={(e) => setRegTrack(e.target.value)}
+                    style={{ padding: '8px 10px', fontSize: '11px', background: 'var(--bg-space-light)' }}
+                  >
+                    <option value="Frontend Web Track">🌐 Frontend Web Track</option>
+                    <option value="Backend Java Track">☕ Backend Java Track</option>
+                    <option value="DevOps & Cloud Track">☁️ DevOps & Cloud Track</option>
+                  </select>
+                </div>
+
+                {validationError && (
+                  <div style={{ fontSize: '9px', color: 'var(--color-rose)', background: 'rgba(255,51,102,0.05)', padding: '4px', borderRadius: '4px', border: '1px solid rgba(255,51,102,0.1)' }}>
+                    ⚠️ {validationError}
+                  </div>
+                )}
+
+                <button type="submit" className="btn btn-primary anim-pulse-glow" style={{ marginTop: '4px', padding: '10px', minHeight: '38px', fontSize: '12px' }}>
+                  Launch Sandbox Now 🚀
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <button 
+                onClick={() => navigate('/dashboard')} 
+                className="btn btn-primary anim-pulse-glow"
+                style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--fs-sm)' }}
+              >
+                Enter Dashboard ⚡
+              </button>
+              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
+                You are registered and ready to track commits!
+              </span>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Value Proposition Grid */}
+      {/* Value Proposition Grid with staggered cards */}
       <section style={{ marginBottom: 'var(--space-8)' }}>
         <h3 style={{
           fontFamily: 'var(--font-display)',
@@ -191,13 +325,14 @@ export default function LandingPage({ navigate }) {
           The 3-Step Proof of Work
         </h3>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div className="grid-responsive-3">
           {valueProps.map((prop, index) => (
-            <div key={index} className="glass-panel" style={{
+            <div key={index} className="glass-panel anim-card-entry" style={{
               display: 'flex',
               gap: 'var(--space-3)',
               background: 'rgba(12, 13, 20, 0.4)',
-              border: '1px solid rgba(255, 255, 255, 0.04)'
+              border: '1px solid rgba(255, 255, 255, 0.04)',
+              animationDelay: `${index * 50 + 200}ms`
             }}>
               <div style={{
                 fontSize: 'var(--fs-lg)',
@@ -239,7 +374,7 @@ export default function LandingPage({ navigate }) {
           Select Your Coding Track
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div className="grid-responsive-3">
           {tracks.map((track) => (
             <div 
               key={track.id} 
@@ -259,7 +394,7 @@ export default function LandingPage({ navigate }) {
                 {track.desc}
               </p>
               <button 
-                onClick={() => navigate('/dashboard')}
+                onClick={handleStartAction}
                 className="btn btn-secondary" 
                 style={{
                   padding: '6px 12px',
@@ -367,7 +502,7 @@ export default function LandingPage({ navigate }) {
           Placed Students Say
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <div className="grid-responsive-2">
           {testimonials.map((test, index) => (
             <div 
               key={index}
@@ -390,7 +525,7 @@ export default function LandingPage({ navigate }) {
       </section>
 
       {/* Final Call to Action */}
-      <section className="glass-panel" style={{
+      <section className="glass-panel animate-card-entry" style={{
         textAlign: 'center',
         background: 'linear-gradient(135deg, rgba(127, 0, 255, 0.1) 0%, rgba(0, 242, 254, 0.08) 100%)',
         border: '1px solid rgba(0, 242, 254, 0.2)',
@@ -404,11 +539,11 @@ export default function LandingPage({ navigate }) {
           Take the 60-day sandbox challenge. Build credentials, establish streaks, get visible. Start coding tonight.
         </p>
         <button 
-          onClick={() => navigate('/dashboard')} 
+          onClick={handleStartAction} 
           className="btn btn-primary"
           style={{ width: '100%', maxWidth: '240px', margin: '0 auto' }}
         >
-          Enroll in Sandbox Free 🚀
+          {isRegistered ? 'Launch Dashboard 🚀' : 'Enroll in Sandbox Free 🚀'}
         </button>
       </section>
 
@@ -418,6 +553,107 @@ export default function LandingPage({ navigate }) {
           © 2026 ABTalks Coding Sandbox. All rights reserved.
         </p>
       </footer>
+
+      {/* 🚀 FALLBACK REGISTER POPUP MODAL (Kept for secondary triggers) */}
+      {showRegisterModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(6, 6, 9, 0.85)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: 'var(--space-4)',
+          paddingTop: '60px', // Align form above the viewport center
+          animation: 'fadeIn 200ms ease-out forwards'
+        }}>
+          <div 
+            className="card card-cosmic card-glowing-cyan"
+            style={{
+              width: '100%',
+              maxWidth: '350px',
+              padding: 'var(--space-5)',
+              position: 'relative',
+              animation: 'cardSlideIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            }}
+          >
+            <button 
+              onClick={() => setShowRegisterModal(false)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '16px',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--color-text-secondary)',
+                fontSize: '18px',
+                cursor: 'pointer'
+              }}
+            >
+              ×
+            </button>
+
+            <h3 style={{ fontSize: 'var(--fs-md)', fontWeight: 'bold', marginBottom: 'var(--space-2)', textAlign: 'center' }}>
+              Initialize Coding Sandbox
+            </h3>
+            <p className="text-muted" style={{ fontSize: '11px', textAlign: 'center', marginBottom: 'var(--space-4)' }}>
+              Configure your credentials to track commits and streak badges.
+            </p>
+
+            <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Full Name</label>
+                <input 
+                  type="text" 
+                  className="glass-input" 
+                  placeholder="e.g. Rahul Sharma"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>University / College</label>
+                <input 
+                  type="text" 
+                  className="glass-input" 
+                  placeholder="e.g. AKTU, IMS, DTU..."
+                  value={regCollege}
+                  onChange={(e) => setRegCollege(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '10px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Select Coding Track</label>
+                <select 
+                  className="glass-input"
+                  value={regTrack}
+                  onChange={(e) => setRegTrack(e.target.value)}
+                  style={{ background: 'var(--bg-space-light)', cursor: 'pointer' }}
+                >
+                  <option value="Frontend Web Track">🌐 Frontend Web Track</option>
+                  <option value="Backend Java Track">☕ Backend Java Track</option>
+                  <option value="DevOps & Cloud Track">☁️ DevOps & Cloud Track</option>
+                </select>
+              </div>
+
+              {validationError && (
+                <div style={{ fontSize: '10px', color: 'var(--color-rose)', background: 'rgba(255,51,102,0.05)', padding: '6px', borderRadius: '4px', border: '1px solid rgba(255,51,102,0.1)' }}>
+                  ⚠️ {validationError}
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary anim-pulse-glow" style={{ marginTop: 'var(--space-2)', padding: 'var(--space-3)' }}>
+                Launch 60-Day Sandbox 🚀
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

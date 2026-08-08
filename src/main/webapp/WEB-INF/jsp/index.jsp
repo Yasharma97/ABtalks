@@ -6,8 +6,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
-    <script type="module" crossorigin src="/assets/index-wkezO36Z.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DbBaMFC5.css">
+    <script type="module" crossorigin src="/assets/index-Bjx6B-1k.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DjJ7yvg6.css">
   </head>
   <body>
     <div id="root"></div>

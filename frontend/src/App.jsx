@@ -7,6 +7,9 @@ import { initialStudentProfiles, baseTasks, generateTasksForState } from './mock
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   
+  // Registration control gate state (defaults to unregistered explorer)
+  const [isRegistered, setIsRegistered] = useState(false);
+
   // React local states replacing backend API syncing
   const [profile, setProfile] = useState(initialStudentProfiles.steady);
   const [tasks, setTasks] = useState(generateTasksForState('steady', baseTasks));
@@ -32,9 +35,8 @@ export default function App() {
     }
   };
 
-  // Client-side submission logic (validation + local state updating)
+  // Client-side submission logic
   const onSubmitSubmission = (dayId, githubUrl, linkedinUrl) => {
-    // 1. Field Validations
     if (!githubUrl || githubUrl.trim() === '' || !githubUrl.includes('github.com')) {
       return { success: false, message: "Please enter a valid GitHub repository or commit URL containing 'github.com'." };
     }
@@ -42,7 +44,6 @@ export default function App() {
       return { success: false, message: "Please enter a valid LinkedIn post URL containing 'linkedin.com'." };
     }
 
-    // 2. Store submission & update task status in local state
     setTasks(prevTasks => prevTasks.map(task => {
       if (task.dayId === dayId) {
         return {
@@ -55,15 +56,13 @@ export default function App() {
       return task;
     }));
 
-    // 3. Update profile details, achievements, and streaks in local state
     setProfile(prevProf => {
       const updatedCount = prevProf.completedCount + 1;
       let newStreak = prevProf.currentStreak;
       let newProfileState = prevProf.profileState;
 
-      // Increment / recover streak
       if (prevProf.profileState === 'missed' && dayId === 13) {
-        newStreak = 1; // Restart streak
+        newStreak = 1;
         newProfileState = 'steady';
       } else if (prevProf.profileState === 'newbie') {
         newStreak = 1;
@@ -75,7 +74,6 @@ export default function App() {
       const longest = Math.max(prevProf.longestStreak, newStreak);
       const updatedBadges = [...prevProf.badges];
 
-      // Add badge triggers
       if (updatedCount === 1 && !updatedBadges.includes("First Commit")) {
         updatedBadges.push("First Commit");
       }
@@ -99,11 +97,34 @@ export default function App() {
     return { success: true, message: `Submission received! Day ${dayId} completed. Streak updated!` };
   };
 
-  // Route resolver helper
+  // Route resolver helper with registration gate
   const renderView = () => {
     if (currentPath === '/') {
-      return <LandingPage navigate={navigate} />;
+      return (
+        <LandingPage 
+          navigate={navigate} 
+          isRegistered={isRegistered}
+          setIsRegistered={setIsRegistered}
+          setProfile={setProfile}
+          setTasks={setTasks}
+        />
+      );
     }
+
+    // Force redirection back to landing page if user is not registered
+    if (!isRegistered) {
+      setTimeout(() => navigate('/'), 0);
+      return (
+        <LandingPage 
+          navigate={navigate} 
+          isRegistered={isRegistered}
+          setIsRegistered={setIsRegistered}
+          setProfile={setProfile}
+          setTasks={setTasks}
+        />
+      );
+    }
+
     if (currentPath === '/dashboard') {
       return (
         <Dashboard 
@@ -115,7 +136,6 @@ export default function App() {
       );
     }
     
-    // Match /day/:id
     const dayMatch = currentPath.match(/^\/day\/(\d+)$/);
     if (dayMatch) {
       const dayId = parseInt(dayMatch[1], 10);
@@ -129,8 +149,15 @@ export default function App() {
       );
     }
 
-    // Default fallback to Landing
-    return <LandingPage navigate={navigate} />;
+    return (
+      <LandingPage 
+        navigate={navigate} 
+        isRegistered={isRegistered}
+        setIsRegistered={setIsRegistered}
+        setProfile={setProfile}
+        setTasks={setTasks}
+      />
+    );
   };
 
   return (
@@ -138,10 +165,12 @@ export default function App() {
       {/* Background Starscape Overlay */}
       <div className="cosmic-stars"></div>
       
-      {/* Active Screen View */}
-      {renderView()}
+      {/* Active Screen View with slide/fade page transitions */}
+      <div key={currentPath} className="anim-page-transition">
+        {renderView()}
+      </div>
 
-      {/* Reusable Bottom Navigation */}
+      {/* Reusable Bottom Navigation Bar (Disabled/redirected on click if unregistered) */}
       <nav className="bottom-nav">
         <button 
           onClick={() => navigate('/')} 
@@ -155,7 +184,15 @@ export default function App() {
         </button>
 
         <button 
-          onClick={() => navigate('/dashboard')} 
+          onClick={() => {
+            if (!isRegistered) {
+              // Trigger signup alert or redirect
+              navigate('/');
+              window.dispatchEvent(new CustomEvent('trigger-registration'));
+            } else {
+              navigate('/dashboard');
+            }
+          }} 
           className={`bottom-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
         >
@@ -166,7 +203,14 @@ export default function App() {
         </button>
 
         <button 
-          onClick={() => navigate('/day/12')} 
+          onClick={() => {
+            if (!isRegistered) {
+              navigate('/');
+              window.dispatchEvent(new CustomEvent('trigger-registration'));
+            } else {
+              navigate('/day/12');
+            }
+          }} 
           className={`bottom-nav-item ${currentPath.startsWith('/day/') ? 'active' : ''}`}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
         >

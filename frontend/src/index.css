@@ -129,10 +129,10 @@ body {
   background: var(--color-purple);
 }
 
-/* --- MOBILE CONTAINER (390px optimization) --- */
+/* --- MOBILE-FIRST CONTAINER (Fluid with Breakpoints) --- */
 .app-container {
   width: 100%;
-  max-width: 420px; /* Optimized viewport container for desktop preview */
+  max-width: 100%;
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
@@ -140,10 +140,22 @@ body {
   background: radial-gradient(circle at 50% 10%, var(--bg-space-medium) 0%, var(--bg-space-dark) 100%);
   position: relative;
   overflow-y: auto;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-  border-left: 1px solid rgba(255, 255, 255, 0.03);
-  border-right: 1px solid rgba(255, 255, 255, 0.03);
-  padding-bottom: 74px; /* Space for fixed bottom navigation bar */
+  padding-bottom: 84px; /* Space for fixed bottom navigation bar */
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 720px;
+    border-left: 1px solid rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    max-width: 960px;
+  }
 }
 
 /* Cosmic stars backdrop */
@@ -319,6 +331,7 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none;
   gap: var(--space-2);
   width: 100%;
+  min-height: 44px; /* Ensure optimal touch-friendly targets */
 }
 
 .btn-primary {
@@ -464,15 +477,15 @@ h1, h2, h3, h4, h5, h6 {
   transition: stroke-dashoffset var(--transition-slow);
 }
 
-/* --- BOTTOM MOBILE NAVIGATION BAR --- */
+/* --- BOTTOM MOBILE NAVIGATION BAR (Matches Breakpoints) --- */
 .bottom-nav {
   position: fixed;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 420px;
-  background: rgba(10, 11, 18, 0.85);
+  max-width: 100%;
+  background: rgba(10, 11, 18, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -481,6 +494,18 @@ h1, h2, h3, h4, h5, h6 {
   padding: var(--space-2) var(--space-4) calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
   z-index: 100;
   box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+  .bottom-nav {
+    max-width: 720px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bottom-nav {
+    max-width: 960px;
+  }
 }
 
 .bottom-nav-item {
@@ -528,7 +553,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @keyframes pulseGlow {
   0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.05); opacity: 1; box-shadow: var(--glow-cyan); }
+  50% { transform: scale(1.04); opacity: 1; box-shadow: var(--glow-cyan); }
   100% { transform: scale(1); opacity: 0.8; }
 }
 
@@ -537,11 +562,30 @@ h1, h2, h3, h4, h5, h6 {
   100% { background-position: 200% 0; }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+/* 1. Page Transitions (Short 200ms slide-up fade) */
+@keyframes pageShift {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* 2. Card Staggered Entrance */
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 4. Circular Progress Drawing */
+@keyframes circleDraw {
+  from { stroke-dashoffset: 314.16; }
+}
+
+/* 5. Custom Confetti Falling */
+@keyframes confettiFall {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--x-shift), 400px, 0) rotate(720deg); opacity: 0; }
+}
+
+/* Animation utility classes */
 .anim-float {
   animation: float 4s ease-in-out infinite;
 }
@@ -551,15 +595,98 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .anim-pulse-glow {
-  animation: pulseGlow 2.5s ease-in-out infinite;
+  animation: pulseGlow 2s ease-in-out infinite;
 }
 
-.anim-fade-in {
-  animation: fadeIn var(--transition-normal) forwards;
+.anim-page-transition {
+  animation: pageShift 200ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.anim-card-entry {
+  animation: cardSlideIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.streak-ring-progress-animated {
+  animation: circleDraw 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.confetti-particle {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  background: var(--color);
+  border-radius: var(--radius);
+  top: -20px;
+  left: var(--left-start);
+  animation: confettiFall var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+  z-index: 1001;
 }
 
 .anim-shimmer {
   background: linear-gradient(90deg, rgba(255,255,255,0) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 75%);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+/* Stagger delay offsets */
+.delay-1 { animation-delay: 40ms; }
+.delay-2 { animation-delay: 80ms; }
+.delay-3 { animation-delay: 120ms; }
+.delay-4 { animation-delay: 160ms; }
+.delay-5 { animation-delay: 200ms; }
+
+/* 3. Tactile button feedbacks */
+.btn {
+  transition: transform 100ms ease, opacity 100ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.btn:active {
+  transform: scale(0.96) !important;
+  opacity: 0.9 !important;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 2px;
+}
+
+/* 7. Accessibility - Reduced Motion rules */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+  .streak-ring-progress-animated {
+    animation: none !important;
+  }
+}
+
+/* --- RESPONSIVE GRID UTILITY CLASSES --- */
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 768px) {
+  .grid-responsive-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+@media (min-width: 768px) {
+  .grid-responsive-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
