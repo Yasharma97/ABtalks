@@ -1,8 +1,5 @@
 export const initialStudentProfiles = {
   newbie: {
-    name: "",
-    college: "",
-    track: "Frontend Web Track",
     currentStreak: 0,
     longestStreak: 0,
     completedCount: 0,
@@ -13,9 +10,6 @@ export const initialStudentProfiles = {
     profileState: "newbie"
   },
   steady: {
-    name: "Aarav Sharma",
-    college: "Delhi Technological University (DTU)",
-    track: "Full Stack Web Track",
     currentStreak: 18,
     longestStreak: 18,
     completedCount: 18,
@@ -26,9 +20,6 @@ export const initialStudentProfiles = {
     profileState: "steady"
   },
   missed: {
-    name: "Priyanka Patel",
-    college: "Vellore Institute of Technology (VIT)",
-    track: "Backend Java Track",
     currentStreak: 0,
     longestStreak: 12,
     completedCount: 12,
@@ -463,35 +454,63 @@ export const baseTasks = [
   }
 ];
 
-export const generateTasksForState = (state, list) => {
+export const calculateStreak = (completedDays, missedDays, currentDay) => {
+  if (completedDays.length === 0) return 0;
+  
+  // Count backward from the day before currentDay, or currentDay if completed
+  let checkDay = completedDays.includes(currentDay) ? currentDay : currentDay - 1;
+  let streak = 0;
+  
+  while (checkDay > 0) {
+    if (completedDays.includes(checkDay)) {
+      streak++;
+      checkDay--;
+    } else if (missedDays.includes(checkDay) || checkDay < currentDay) {
+      // Streak broken
+      break;
+    } else {
+      checkDay--;
+    }
+  }
+  return streak;
+};
+
+export const calculateLongestStreak = (completedDays) => {
+  if (completedDays.length === 0) return 0;
+  
+  let maxStreak = 0;
+  let currentStreak = 0;
+  const sortedDays = [...new Set(completedDays)].sort((a, b) => a - b);
+  let expected = null;
+  
+  for (let day of sortedDays) {
+    if (expected === null || day === expected) {
+      currentStreak++;
+      expected = day + 1;
+    } else {
+      maxStreak = Math.max(maxStreak, currentStreak);
+      currentStreak = 1;
+      expected = day + 1;
+    }
+  }
+  return Math.max(maxStreak, currentStreak);
+};
+
+export const deriveTasksFromProgress = (completedDays, missedDays, currentDay, list) => {
   return list.map(baseTask => {
     const day = baseTask.dayId;
     let status = "LOCKED";
     let github = "";
     let linkedin = "";
 
-    if (state === "steady") {
-      if (day <= 18) {
-        status = "COMPLETED";
-        github = "https://github.com/aaravsharma/abtalks-60day/commit/d2" + day + "fbf8e";
-        linkedin = "https://linkedin.com/posts/aarav-sharma-day" + day;
-      } else if (day === 19) {
-        status = "PENDING";
-      }
-    } else if (state === "newbie") {
-      if (day === 1) {
-        status = "PENDING";
-      }
-    } else if (state === "missed") {
-      if (day <= 11) {
-        status = "COMPLETED";
-        github = "https://github.com/priyankap/60days/commit/f4" + day + "bb82d";
-        linkedin = "https://linkedin.com/posts/priyanka-p-day" + day;
-      } else if (day === 12) {
-        status = "MISSED";
-      } else if (day === 13) {
-        status = "PENDING";
-      }
+    if (completedDays.includes(day)) {
+      status = "COMPLETED";
+      github = "https://github.com/rohitsharma/abtalks-60day/commit/d2" + day + "fbf8e";
+      linkedin = "https://linkedin.com/posts/rohit-sharma-day" + day;
+    } else if (missedDays.includes(day) || (day < currentDay)) {
+      status = "MISSED";
+    } else if (day === currentDay) {
+      status = "PENDING";
     }
 
     return {
@@ -501,4 +520,23 @@ export const generateTasksForState = (state, list) => {
       linkedinUrl: linkedin
     };
   });
+};
+
+export const generateTasksForState = (state, list) => {
+  let completedDays = [];
+  let missedDays = [];
+  let currentDay = 1;
+
+  if (state === "steady") {
+    completedDays = Array.from({ length: 18 }, (_, i) => i + 1);
+    currentDay = 19;
+  } else if (state === "newbie") {
+    currentDay = 1;
+  } else if (state === "missed") {
+    completedDays = Array.from({ length: 11 }, (_, i) => i + 1);
+    missedDays = [12];
+    currentDay = 13;
+  }
+
+  return deriveTasksFromProgress(completedDays, missedDays, currentDay, list);
 };

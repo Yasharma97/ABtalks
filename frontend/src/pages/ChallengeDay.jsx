@@ -166,7 +166,7 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
   ];
 
   return (
-    <div style={{ padding: 'var(--space-4)', position: 'relative' }}>
+    <div style={{ padding: 'var(--space-4)', paddingBottom: '120px', position: 'relative' }}>
       
       {/* 🚀 LIGHTWEIGHT CSS CONFETTI CELEBRATION OVERLAY */}
       {showConfetti && (
@@ -215,22 +215,41 @@ export default function ChallengeDay({ dayId, tasks, onSubmitSubmission, navigat
       )}
 
       {/* Navigation Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--color-text-secondary)',
-            cursor: 'pointer',
-            fontSize: '18px',
-            padding: '4px'
-          }}
-        >
-          ←
-        </button>
-        <h2 style={{ fontSize: 'var(--fs-md)', margin: 0, fontWeight: 'bold' }}>Challenge Day {task.dayId}</h2>
-        <Badge type="cyan" style={{ marginLeft: 'auto' }}>{task.difficulty}</Badge>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: 'var(--space-4)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <button 
+            onClick={() => navigate('/dashboard')} 
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              fontSize: '18px',
+              padding: '4px'
+            }}
+          >
+            ←
+          </button>
+          <h2 style={{ fontSize: 'var(--fs-md)', margin: 0, fontWeight: 'bold' }}>Challenge Day {task.dayId}</h2>
+          <Badge type="cyan" style={{ marginLeft: 'auto' }}>{task.difficulty}</Badge>
+        </div>
+
+        {/* Constellation Milestone progress track marker */}
+        <div style={{
+          fontSize: '9.5px',
+          color: 'var(--color-text-secondary)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          paddingLeft: '32px',
+          fontFamily: 'var(--font-display)',
+          letterSpacing: '0.5px'
+        }}>
+          <span>DAY {task.dayId} / 60</span>
+          <span style={{ color: 'var(--color-cyan)', letterSpacing: '-1.5px', opacity: 0.35 }}>───────</span>
+          <span style={{ color: 'var(--color-cyan)', fontWeight: 'bold', textShadow: '0 0 6px var(--color-cyan)' }}>✦</span>
+          <span style={{ color: 'var(--color-cyan)', letterSpacing: '-1.5px', opacity: 0.25 }}>────────────────────────</span>
+        </div>
       </div>
 
       {/* Responsive Split Columns for Challenge Detail and submission validation */}

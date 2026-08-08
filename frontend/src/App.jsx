@@ -2,17 +2,46 @@ import React, { useState, useEffect } from 'react';
 import LandingPage from './pages/LandingPage';
 import Dashboard from './pages/Dashboard';
 import ChallengeDay from './pages/ChallengeDay';
-import { initialStudentProfiles, baseTasks, generateTasksForState } from './mockData';
+import ConstellationBackground from './components/ConstellationBackground';
+import { initialStudentProfiles, baseTasks, generateTasksForState, calculateStreak, calculateLongestStreak, deriveTasksFromProgress } from './mockData';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   
   // Registration control gate state (defaults to unregistered explorer)
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(() => {
+    return localStorage.getItem('abtalks_is_registered') === 'true';
+  });
 
-  // React local states replacing backend API syncing
-  const [profile, setProfile] = useState(initialStudentProfiles.steady);
-  const [tasks, setTasks] = useState(generateTasksForState('steady', baseTasks));
+  // Decoupled currentUser identity state
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('abtalks_current_user');
+    return saved ? JSON.parse(saved) : {
+      name: "Rohit Sharma",
+      college: "Delhi Technological University (DTU)",
+      track: "Frontend Web Track"
+    };
+  });
+
+  // Decoupled actual student challenge progress
+  const [actualProgress, setActualProgress] = useState(() => {
+    const saved = localStorage.getItem('abtalks_actual_progress');
+    return saved ? JSON.parse(saved) : {
+      completedDays: [],
+      missedDays: [],
+      currentDay: 1
+    };
+  });
+
+  // Edge case preview states switcher selector ('real', 'newbie', 'steady', 'missed')
+  const [activePreviewState, setActivePreviewState] = useState("real");
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('abtalks_is_registered', isRegistered);
+    localStorage.setItem('abtalks_current_user', JSON.stringify(currentUser));
+    localStorage.setItem('abtalks_actual_progress', JSON.stringify(actualProgress));
+  }, [isRegistered, currentUser, actualProgress]);
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -27,12 +56,108 @@ export default function App() {
     setCurrentPath(path);
   };
 
+  // Derive active progress depending on Edge Case Preview state
+  let activeProgress = { ...actualProgress };
+
+  if (activePreviewState === "newbie") {
+    activeProgress = { completedDays: [], missedDays: [], currentDay: 1 };
+  } else if (activePreviewState === "steady") {
+    activeProgress = {
+      completedDays: Array.from({ length: 18 }, (_, i) => i + 1),
+      missedDays: [],
+      currentDay: 19
+    };
+  } else if (activePreviewState === "missed") {
+    activeProgress = {
+      completedDays: Array.from({ length: 11 }, (_, i) => i + 1),
+      missedDays: [12],
+      currentDay: 13
+    };
+  }
+
+  // Derive tasks list dynamically from current active progress state
+  const tasks = deriveTasksFromProgress(
+    activeProgress.completedDays,
+    activeProgress.missedDays,
+    activeProgress.currentDay,
+    baseTasks
+  );
+
+  // Compute metrics dynamically
+  const currentStreak = calculateStreak(activeProgress.completedDays, activeProgress.missedDays, activeProgress.currentDay);
+  const longestStreak = calculateLongestStreak(activeProgress.completedDays);
+  const completedCount = activeProgress.completedDays.length;
+  const missedCount = activeProgress.missedDays.length;
+  const xp = completedCount * 100;
+  const level = Math.floor(xp / 500) + 1;
+
+  // Deriving active badges list based on milestones
+  const badges = [];
+  if (completedCount >= 1) badges.push("First Commit");
+  if (currentStreak >= 7) badges.push("7-Day Warrior");
+  if (currentStreak >= 14) badges.push("14-Day Overlord");
+  if (completedCount >= 10) badges.push("Early Bird");
+
+  // Determine active profileState slug
+  let profileState = "newbie";
+  if (activeProgress.missedDays.includes(activeProgress.currentDay - 1)) {
+    profileState = "missed";
+  } else if (completedCount > 0) {
+    profileState = "steady";
+  }
+
+  const profile = {
+    ...currentUser,
+    currentStreak,
+    longestStreak,
+    completedCount,
+    missedCount,
+    level,
+    xp,
+    badges,
+    profileState,
+    activePreviewState // Pass preview identifier down
+  };
+
   // Client-side profile state switching loader
   const switchProfileState = (state) => {
-    if (initialStudentProfiles[state]) {
-      setProfile(initialStudentProfiles[state]);
-      setTasks(generateTasksForState(state, baseTasks));
+    // If state is 'real', return to Rohit's actual progress
+    if (state === "real") {
+      setActivePreviewState("real");
+    } else if (state === "newbie" || state === "steady" || state === "missed") {
+      setActivePreviewState(state);
     }
+  };
+
+  // Client-side signup registration setProfile proxy
+  const handleSignupProfile = (newProfile) => {
+    setCurrentUser({
+      name: newProfile.name,
+      college: newProfile.college,
+      track: newProfile.track
+    });
+    setActualProgress({
+      completedDays: [],
+      missedDays: [],
+      currentDay: 1
+    });
+    setActivePreviewState("real");
+  };
+
+  // Service method to advance time/day for real user testing
+  const onAdvanceDay = () => {
+    setActualProgress(prev => {
+      const missed = [...prev.missedDays];
+      // If the current day is not completed, it is marked as missed
+      if (!prev.completedDays.includes(prev.currentDay)) {
+        missed.push(prev.currentDay);
+      }
+      return {
+        ...prev,
+        missedDays: missed,
+        currentDay: prev.currentDay + 1
+      };
+    });
   };
 
   // Client-side submission logic
@@ -44,53 +169,20 @@ export default function App() {
       return { success: false, message: "Please enter a valid LinkedIn post URL containing 'linkedin.com'." };
     }
 
-    setTasks(prevTasks => prevTasks.map(task => {
-      if (task.dayId === dayId) {
-        return {
-          ...task,
-          status: 'COMPLETED',
-          githubUrl: githubUrl,
-          linkedinUrl: linkedinUrl
-        };
-      }
-      return task;
-    }));
+    setActualProgress(prev => {
+      const completed = prev.completedDays.includes(dayId)
+        ? prev.completedDays
+        : [...prev.completedDays, dayId];
 
-    setProfile(prevProf => {
-      const updatedCount = prevProf.completedCount + 1;
-      let newStreak = prevProf.currentStreak;
-      let newProfileState = prevProf.profileState;
-
-      if (prevProf.profileState === 'missed' && dayId === 13) {
-        newStreak = 1;
-        newProfileState = 'steady';
-      } else if (prevProf.profileState === 'newbie') {
-        newStreak = 1;
-        newProfileState = 'steady';
-      } else {
-        newStreak = prevProf.currentStreak + 1;
-      }
-
-      const longest = Math.max(prevProf.longestStreak, newStreak);
-      const updatedBadges = [...prevProf.badges];
-
-      if (updatedCount === 1 && !updatedBadges.includes("First Commit")) {
-        updatedBadges.push("First Commit");
-      }
-      if (newStreak === 7 && !updatedBadges.includes("7-Day Warrior")) {
-        updatedBadges.push("7-Day Warrior");
+      let nextDay = prev.currentDay;
+      if (dayId === prev.currentDay) {
+        nextDay = prev.currentDay + 1;
       }
 
       return {
-        ...prevProf,
-        name: prevProf.name || "New Coding Warrior",
-        college: prevProf.college || "My College",
-        completedCount: updatedCount,
-        currentStreak: newStreak,
-        longestStreak: longest,
-        profileState: newProfileState,
-        xp: prevProf.xp + 100,
-        badges: updatedBadges
+        ...prev,
+        completedDays: completed,
+        currentDay: nextDay
       };
     });
 
@@ -105,8 +197,8 @@ export default function App() {
           navigate={navigate} 
           isRegistered={isRegistered}
           setIsRegistered={setIsRegistered}
-          setProfile={setProfile}
-          setTasks={setTasks}
+          setProfile={handleSignupProfile}
+          setTasks={() => {}}
         />
       );
     }
@@ -119,8 +211,8 @@ export default function App() {
           navigate={navigate} 
           isRegistered={isRegistered}
           setIsRegistered={setIsRegistered}
-          setProfile={setProfile}
-          setTasks={setTasks}
+          setProfile={handleSignupProfile}
+          setTasks={() => {}}
         />
       );
     }
@@ -131,6 +223,7 @@ export default function App() {
           profile={profile} 
           tasks={tasks} 
           switchProfileState={switchProfileState} 
+          onAdvanceDay={onAdvanceDay}
           navigate={navigate} 
         />
       );
@@ -154,16 +247,33 @@ export default function App() {
         navigate={navigate} 
         isRegistered={isRegistered}
         setIsRegistered={setIsRegistered}
-        setProfile={setProfile}
-        setTasks={setTasks}
+        setProfile={handleSignupProfile}
+        setTasks={() => {}}
       />
     );
   };
 
+  // Determine current active day to highlight in constellation
+  let constellationDay = 0;
+  let constellationOpacity = 0.85;
+
+  if (isRegistered) {
+    if (currentPath.startsWith('/day/')) {
+      const match = currentPath.match(/^\/day\/(\d+)$/);
+      if (match) {
+        constellationDay = parseInt(match[1], 10);
+      }
+      constellationOpacity = 0.35; // Keep it extremely subtle on task details pages
+    } else if (currentPath === '/dashboard') {
+      constellationDay = profile.completedCount || 0;
+      constellationOpacity = 0.85; // Full visible depth on dashboard
+    }
+  }
+
   return (
     <div className="app-container">
-      {/* Background Starscape Overlay */}
-      <div className="cosmic-stars"></div>
+      {/* Background Constellation Journey System */}
+      <ConstellationBackground currentDay={constellationDay} opacityMultiplier={constellationOpacity} />
       
       {/* Active Screen View with slide/fade page transitions */}
       <div key={currentPath} className="anim-page-transition">

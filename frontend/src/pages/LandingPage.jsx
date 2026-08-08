@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { generateTasksForState, baseTasks } from '../mockData';
 
 export default function LandingPage({ navigate, isRegistered, setIsRegistered, setProfile, setTasks }) {
@@ -7,6 +7,16 @@ export default function LandingPage({ navigate, isRegistered, setIsRegistered, s
   const [regCollege, setRegCollege] = useState('');
   const [regTrack, setRegTrack] = useState('Frontend Web Track');
   const [validationError, setValidationError] = useState('');
+  
+  const journeyRef = useRef(null);
+
+  const milestoneData = [
+    { day: "DAY 01", label: "Start", desc: "Initiate your streak. Build your repository coordinates." },
+    { day: "DAY 15", label: "Consistency", desc: "Build coding discipline. Establish nightly habits." },
+    { day: "DAY 30", label: "Momentum", desc: "Halfway mark. Solve advanced algorithm coordinates." },
+    { day: "DAY 45", label: "Visibility", desc: "Public sharing triggers recruiter interest on LinkedIn." },
+    { day: "DAY 60", label: "Recruiter Ready", desc: "Unlock a complete verifiable sandbox profile for jobs." }
+  ];
 
   // Listen to navigation gate events from bottom bar triggers
   useEffect(() => {
@@ -21,7 +31,17 @@ export default function LandingPage({ navigate, isRegistered, setIsRegistered, s
     if (isRegistered) {
       navigate('/dashboard');
     } else {
-      setShowRegisterModal(true);
+      // Scroll to hero/inline registration directly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Visual focus to name input
+      const nameInput = document.getElementById('reg-name-field');
+      if (nameInput) nameInput.focus();
+    }
+  };
+
+  const scrollToJourney = () => {
+    if (journeyRef.current) {
+      journeyRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -64,83 +84,28 @@ export default function LandingPage({ navigate, isRegistered, setIsRegistered, s
     {
       id: "frontend",
       name: "Frontend Web Track",
-      icon: "🌐",
-      desc: "React, Vite, CSS Grid, Framer Motion, Tailwind CSS & SEO",
+      desc: "React, Vite, CSS Grid, animations & SEO",
       level: "Beginner to Pro",
-      accent: "var(--color-cyan)",
-      borderClass: "card-glowing-cyan"
+      accent: "var(--color-cyan)"
     },
     {
       id: "backend",
       name: "Backend Java Track",
-      icon: "☕",
-      desc: "Core Java, OOPs, Spring Boot, JPA Hibernate, Gradle & SQL",
+      desc: "Core Java, OOPs, Spring Boot, JPA & SQL",
       level: "Intermediate",
-      accent: "var(--color-purple)",
-      borderClass: "card-glowing-purple"
+      accent: "var(--color-purple)"
     },
     {
       id: "devops",
       name: "DevOps & Cloud Track",
-      icon: "☁️",
-      desc: "Docker, Kubernetes, GitHub Actions, Linux Bash & AWS Cloud",
+      desc: "Docker, Kubernetes, GitHub Actions & AWS Cloud",
       level: "Advanced",
-      accent: "var(--color-emerald)",
-      borderClass: "card-glowing-emerald"
+      accent: "var(--color-emerald)"
     }
-  ];
-
-  const valueProps = [
-    {
-      step: "01",
-      title: "Get Daily Task Coordinates",
-      desc: "Receive bite-sized industry-relevant coding problems unlocked every single day at midnight.",
-      icon: "📥"
-    },
-    {
-      step: "02",
-      title: "Commit to Public GitHub",
-      desc: "Push your solutions to Git. Build a verifiable proof of work history that recruiters can verify.",
-      icon: "🐙"
-    },
-    {
-      step: "03",
-      title: "Publish LinkedIn Daily Log",
-      desc: "Share your learnings and build public authority. Get noticed by startup founders and talent acquisition teams.",
-      icon: "📢"
-    }
-  ];
-
-  const testimonials = [
-    {
-      name: "Rohan Mehta",
-      college: "BMS College of Engineering",
-      role: "React Dev @ Razorpay",
-      text: "ABTalks forced consistency in me. Pushing commits and posting on LinkedIn daily for 60 days made recruiters DM me instead of me applying. Highly recommended!",
-      avatar: "👨‍💻",
-      borderClass: "card-glowing-cyan"
-    },
-    {
-      name: "Sneha Gupta",
-      college: "HBTU Kanpur",
-      role: "Java Dev @ Cognizant",
-      text: "The late-night gamified streaks kept me coding even after long lectures. Building Spring Boot endpoints gave me real-world design experience.",
-      avatar: "👩‍💻",
-      borderClass: "card-glowing-purple"
-    }
-  ];
-
-  const recruiterLogos = [
-    { name: "Google", color: "#4285F4" },
-    { name: "Microsoft", color: "#F25022" },
-    { name: "Amazon", color: "#FF9900" },
-    { name: "TCS", color: "#1B365D" },
-    { name: "Infosys", color: "#007CC3" },
-    { name: "Razorpay", color: "#0052FF" }
   ];
 
   return (
-    <div style={{ padding: 'var(--space-4)', position: 'relative' }}>
+    <div style={{ padding: 'var(--space-4) 18px', paddingBottom: '120px', position: 'relative' }}>
       
       {/* Decorative cosmic nebula light source */}
       <div style={{
@@ -155,402 +120,457 @@ export default function LandingPage({ navigate, isRegistered, setIsRegistered, s
         zIndex: 0
       }}></div>
 
-      {/* Header Bar */}
+      {/* 00 — BRAND BAR */}
       <header style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 'var(--space-8)',
+        marginBottom: 'var(--space-6)',
         position: 'relative',
         zIndex: 10
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <div className="anim-float" style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: 'var(--radius-md)',
+          <div style={{
+            width: '26px',
+            height: '26px',
+            borderRadius: '4px',
             background: 'linear-gradient(135deg, var(--color-cyan), var(--color-purple))',
-            boxShadow: 'var(--glow-cyan)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 'var(--fs-md)',
+            fontSize: '11px',
             fontWeight: 'bold',
             color: '#fff'
           }}>
             AB
           </div>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: '800', fontSize: 'var(--fs-md)', letterSpacing: '1.5px', margin: 0 }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: '800', fontSize: '13px', letterSpacing: '1px', margin: 0 }}>
               AB<span className="text-gradient-cyan-purple">TALKS</span>
             </h1>
-            <span style={{ fontSize: '8px', color: 'var(--color-text-secondary)', letterSpacing: '2px', textTransform: 'uppercase', display: 'block', marginTop: '-3px' }}>
-              Coding Sandbox
-            </span>
           </div>
         </div>
         <button 
           onClick={handleStartAction} 
           className="btn btn-secondary" 
-          style={{ width: 'auto', padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--fs-xs)', borderRadius: 'var(--radius-sm)' }}
+          style={{ width: 'auto', padding: '6px 12px', fontSize: '10px', minHeight: '32px', borderRadius: '4px' }}
         >
-          {isRegistered ? 'Dashboard →' : 'Register'}
+          {isRegistered ? 'Dashboard →' : 'Start Day 1'}
         </button>
       </header>
 
-      {/* Hero Section with staggered card entrance animations */}
-      <section style={{ textAlign: 'center', marginBottom: 'var(--space-10)', position: 'relative', zIndex: 5 }}>
-        <div className="badge badge-cyan anim-card-entry delay-1" style={{ marginBottom: 'var(--space-4)', padding: '6px 12px', fontSize: '10px' }}>
-          ✨ The Ultimate 60-Day Student Coding Challenge
-        </div>
+      {/* 01 — HERO */}
+      <section style={{ textAlign: 'center', marginBottom: 'var(--space-8)', position: 'relative' }}>
         
-        <h2 className="anim-card-entry delay-2" style={{
+        <h2 className="anim-card-entry delay-1" style={{
           fontFamily: 'var(--font-display)',
-          fontSize: 'var(--fs-xxl)',
-          lineHeight: '1.2',
+          fontSize: '26px',
+          lineHeight: '1.25',
           fontWeight: '900',
-          marginBottom: 'var(--space-3)'
+          letterSpacing: '-0.02em',
+          marginBottom: 'var(--space-3)',
+          textAlign: 'center'
         }}>
-          Build Consistency.<br />
-          <span className="text-gradient-cyan-purple">Get Recruiter-Ready.</span>
+          60 NIGHTS.<br />
+          60 PROOFS.<br />
+          <span className="text-gradient-cyan-purple">ONE VISIBLE TRANSFORMATION.</span>
         </h2>
         
-        <p className="text-muted anim-card-entry delay-3" style={{
-          fontSize: 'var(--fs-sm)',
-          maxWidth: '350px',
-          margin: '0 auto var(--space-5)',
-          lineHeight: '1.5',
-          padding: '0 var(--space-2)'
+        <p className="text-muted anim-card-entry delay-2" style={{
+          fontSize: '12px',
+          maxWidth: '320px',
+          margin: '0 auto var(--space-4)',
+          lineHeight: '1.5'
         }}>
-          Pick your track, write clean code every night, and project your progress live to prospective recruiters via Git and LinkedIn.
+          Build something every day. Prove it with GitHub + LinkedIn. Turn consistency into recruiter-visible proof.
         </p>
 
-        {/* 🚀 FIRST APPEARANCE: Inline Registration Form (if not registered) */}
-        <div className="anim-card-entry delay-4" style={{ width: '100%', maxWidth: '340px', margin: '0 auto' }}>
+        {/* 60-Node Minimal Journey Path */}
+        <div className="anim-card-entry delay-2" style={{ margin: 'var(--space-4) 0' }}>
+          <div className="journey-node-grid">
+            {Array.from({ length: 60 }).map((_, i) => {
+              const day = i + 1;
+              const isMilestone = [1, 15, 30, 45, 60].includes(day);
+              return (
+                <div 
+                  key={day}
+                  className={`journey-node ${isMilestone ? 'milestone' : ''}`}
+                  title={`Day ${day}`}
+                />
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '270px', margin: '0 auto', fontSize: '8px', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-display)', fontWeight: 'bold', opacity: 0.8 }}>
+            <span>Day 01</span>
+            <span>Day 15</span>
+            <span>Day 30</span>
+            <span>Day 45</span>
+            <span>Day 60</span>
+          </div>
+        </div>
+
+        {/* Registration Inline Card (Above the fold/First appearance) */}
+        <div className="anim-card-entry delay-3" style={{ width: '100%', maxWidth: '330px', margin: '0 auto' }}>
           {!isRegistered ? (
             <div 
-              className="card card-cosmic card-glowing-cyan"
               style={{
                 padding: 'var(--space-4)',
                 textAlign: 'left',
-                background: 'rgba(12, 13, 20, 0.85)',
-                border: '1px solid rgba(0, 242, 254, 0.3)',
-                boxShadow: 'var(--glow-cyan)'
+                background: 'rgba(12, 13, 20, 0.4)',
+                border: '1px solid var(--border-space)',
+                borderRadius: 'var(--radius-md)'
               }}
             >
-              <h3 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', marginBottom: 'var(--space-1)', textAlign: 'center', color: '#fff' }}>
-                Quick Initialize Sandbox
+              <h3 style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: 'var(--space-1)', textAlign: 'center', color: '#fff' }}>
+                Join the challenge
               </h3>
-              <p className="text-muted" style={{ fontSize: '10px', textAlign: 'center', marginBottom: 'var(--space-3)', lineHeight: '1.3' }}>
-                Enter your details coordinates to unlock `/dashboard` and start submitting tasks.
+              <p className="text-muted" style={{ fontSize: '9.5px', textAlign: 'center', marginBottom: 'var(--space-3)' }}>
+                Initialize your local profile to start tracking verification streaks.
               </p>
 
-              <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Full Name</label>
-                  <input 
-                    type="text" 
-                    className="glass-input" 
-                    placeholder="e.g. Rahul Sharma"
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    style={{ padding: '8px 10px', fontSize: '11px' }}
-                    required
-                  />
-                </div>
+              <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input 
+                  id="reg-name-field"
+                  type="text" 
+                  className="glass-input" 
+                  placeholder="Your Name"
+                  value={regName}
+                  onChange={(e) => setRegName(e.target.value)}
+                  style={{ padding: '8px 10px', fontSize: '11px', minHeight: '36px' }}
+                  required
+                />
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>University / College</label>
-                  <input 
-                    type="text" 
-                    className="glass-input" 
-                    placeholder="e.g. AKTU, IMS, DTU"
-                    value={regCollege}
-                    onChange={(e) => setRegCollege(e.target.value)}
-                    style={{ padding: '8px 10px', fontSize: '11px' }}
-                    required
-                  />
-                </div>
+                <input 
+                  type="text" 
+                  className="glass-input" 
+                  placeholder="Your College / University"
+                  value={regCollege}
+                  onChange={(e) => setRegCollege(e.target.value)}
+                  style={{ padding: '8px 10px', fontSize: '11px', minHeight: '36px' }}
+                  required
+                />
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <label style={{ fontSize: '9px', fontWeight: 'bold', color: 'var(--color-text-secondary)' }}>Tech Track</label>
-                  <select 
-                    className="glass-input"
-                    value={regTrack}
-                    onChange={(e) => setRegTrack(e.target.value)}
-                    style={{ padding: '8px 10px', fontSize: '11px', background: 'var(--bg-space-light)' }}
-                  >
-                    <option value="Frontend Web Track">🌐 Frontend Web Track</option>
-                    <option value="Backend Java Track">☕ Backend Java Track</option>
-                    <option value="DevOps & Cloud Track">☁️ DevOps & Cloud Track</option>
-                  </select>
-                </div>
+                <select 
+                  className="glass-input"
+                  value={regTrack}
+                  onChange={(e) => setRegTrack(e.target.value)}
+                  style={{ padding: '8px 10px', fontSize: '11px', minHeight: '36px', background: 'var(--bg-space-light)' }}
+                >
+                  <option value="Frontend Web Track">Frontend Web Track</option>
+                  <option value="Backend Java Track">Backend Java Track</option>
+                  <option value="DevOps & Cloud Track">DevOps & Cloud Track</option>
+                </select>
 
                 {validationError && (
-                  <div style={{ fontSize: '9px', color: 'var(--color-rose)', background: 'rgba(255,51,102,0.05)', padding: '4px', borderRadius: '4px', border: '1px solid rgba(255,51,102,0.1)' }}>
+                  <div style={{ fontSize: '9px', color: 'var(--color-rose)', background: 'rgba(255,51,102,0.04)', padding: '4px', borderRadius: '4px' }}>
                     ⚠️ {validationError}
                   </div>
                 )}
 
-                <button type="submit" className="btn btn-primary anim-pulse-glow" style={{ marginTop: '4px', padding: '10px', minHeight: '38px', fontSize: '12px' }}>
-                  Launch Sandbox Now 🚀
+                <button type="submit" className="btn btn-primary" style={{ marginTop: '4px', padding: '10px', minHeight: '44px', fontSize: '12px' }}>
+                  Start Day 1 →
                 </button>
               </form>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button 
                 onClick={() => navigate('/dashboard')} 
                 className="btn btn-primary anim-pulse-glow"
-                style={{ padding: 'var(--space-3) var(--space-6)', fontSize: 'var(--fs-sm)' }}
+                style={{ minHeight: '44px', fontSize: '12px' }}
               >
                 Enter Dashboard ⚡
               </button>
-              <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
-                You are registered and ready to track commits!
-              </span>
             </div>
           )}
+          
+          <button 
+            onClick={scrollToJourney}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--color-cyan)',
+              fontSize: '10px',
+              marginTop: '12px',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            Explore the Journey
+          </button>
         </div>
       </section>
 
-      {/* Value Proposition Grid with staggered cards */}
-      <section style={{ marginBottom: 'var(--space-8)' }}>
-        <h3 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'var(--fs-md)',
-          textAlign: 'center',
-          marginBottom: 'var(--space-4)'
-        }}>
-          The 3-Step Proof of Work
+      {/* 02 — THE 60-NIGHT JOURNEY (HORIZONTAL LIST TIMELINE) */}
+      <section ref={journeyRef} style={{ marginBottom: 'var(--space-8)', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)' }}>
+        <span style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-cyan)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          02 · Milestones
+        </span>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px', marginBottom: 'var(--space-4)' }}>
+          The 60-Night Journey
         </h3>
-        
-        <div className="grid-responsive-3">
-          {valueProps.map((prop, index) => (
-            <div key={index} className="glass-panel anim-card-entry" style={{
-              display: 'flex',
-              gap: 'var(--space-3)',
-              background: 'rgba(12, 13, 20, 0.4)',
-              border: '1px solid rgba(255, 255, 255, 0.04)',
-              animationDelay: `${index * 50 + 200}ms`
-            }}>
-              <div style={{
-                fontSize: 'var(--fs-lg)',
-                fontWeight: '800',
-                color: 'var(--color-cyan)',
-                fontFamily: 'var(--font-display)',
-                background: 'rgba(0, 242, 254, 0.05)',
-                minWidth: '40px',
-                height: '40px',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: 'inset 0 0 10px rgba(0, 242, 254, 0.1)'
-              }}>
-                {prop.step}
+
+        {/* Horizontal scroll container mapping all points at once with connecting line decorators */}
+        <div className="horizontal-journey-track" style={{ marginTop: 'var(--space-4)' }}>
+          {milestoneData.map((m, idx) => (
+            <div key={idx} className="horizontal-journey-item">
+              
+              {/* Connecting line to the next circle node */}
+              {idx < milestoneData.length - 1 && (
+                <div style={{
+                  position: 'absolute',
+                  left: '26px',
+                  top: '13px',
+                  width: '100%',
+                  height: '1px',
+                  background: 'linear-gradient(90deg, var(--color-cyan) 0%, var(--color-purple) 100%)',
+                  opacity: 0.35,
+                  zIndex: 1
+                }}></div>
+              )}
+
+              {/* Milestone Indicator Node */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', zIndex: 2, marginBottom: '10px' }}>
+                <div style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'rgba(0, 242, 254, 0.08)',
+                  border: '1px solid var(--color-cyan)',
+                  color: 'var(--color-cyan)',
+                  fontSize: '9px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: 'var(--glow-cyan)'
+                }}>
+                  {m.day.split(' ')[1]}
+                </div>
+                <span className="badge badge-purple" style={{ fontSize: '8px', padding: '1px 5px' }}>
+                  {m.label}
+                </span>
               </div>
-              <div>
-                <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', marginBottom: '2px', color: 'var(--color-text-primary)' }}>
-                  {prop.title}
+
+              {/* Milestone details description card */}
+              <div style={{ paddingRight: '12px' }}>
+                <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff', margin: '0 0 3px' }}>
+                  {m.day}
                 </h4>
-                <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4' }}>
-                  {prop.desc}
+                <p className="text-muted" style={{ fontSize: '10px', margin: 0, lineHeight: '1.4' }}>
+                  {m.desc}
                 </p>
               </div>
+
             </div>
           ))}
         </div>
       </section>
 
-      {/* Track Selector Section */}
-      <section style={{ marginBottom: 'var(--space-8)' }}>
-        <h3 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'var(--fs-md)',
-          textAlign: 'center',
-          marginBottom: 'var(--space-4)'
-        }}>
-          Select Your Coding Track
+      {/* 03 — BUILD → PROVE → SHOW */}
+      <section style={{ marginBottom: 'var(--space-8)', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)' }}>
+        <span style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-purple)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          03 · Loop
+        </span>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px', marginBottom: 'var(--space-4)' }}>
+          Build · Prove · Show
         </h3>
 
-        <div className="grid-responsive-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline' }}>
+            <span style={{ fontSize: '18px', fontFamily: 'var(--font-display)', fontWeight: '900', color: 'var(--color-cyan)', width: '20px' }}>01</span>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>BUILD</h4>
+              <p className="text-muted" style={{ margin: 0, fontSize: '11px', marginTop: '2px' }}>Complete today's task.</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline' }}>
+            <span style={{ fontSize: '18px', fontFamily: 'var(--font-display)', fontWeight: '900', color: 'var(--color-purple)', width: '20px' }}>02</span>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>PROVE</h4>
+              <p className="text-muted" style={{ margin: 0, fontSize: '11px', marginTop: '2px' }}>Submit your GitHub commit.</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline' }}>
+            <span style={{ fontSize: '18px', fontFamily: 'var(--font-display)', fontWeight: '900', color: 'var(--color-emerald)', width: '20px' }}>03</span>
+            <div>
+              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>SHOW</h4>
+              <p className="text-muted" style={{ margin: 0, fontSize: '11px', marginTop: '2px' }}>Share your progress on LinkedIn.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ 
+          marginTop: 'var(--space-5)', 
+          padding: '10px', 
+          borderLeft: '2px solid var(--color-cyan)',
+          background: 'rgba(255,255,255,0.01)',
+          fontSize: '11px',
+          fontStyle: 'italic',
+          color: 'var(--color-text-secondary)'
+        }}>
+          "60 nights later → a visible body of work."
+        </div>
+      </section>
+
+      {/* 04 — CHOOSE YOUR TRACK */}
+      <section style={{ marginBottom: 'var(--space-8)', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)' }}>
+        <span style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-emerald)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          04 · Tracks
+        </span>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px', marginBottom: 'var(--space-4)' }}>
+          Choose Your Track
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {tracks.map((track) => (
             <div 
               key={track.id} 
-              className={`card card-cosmic card-interactive ${track.borderClass}`}
-              style={{ padding: 'var(--space-4)' }}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                padding: '12px 14px', 
+                background: 'rgba(255, 255, 255, 0.01)', 
+                border: '1px solid var(--border-space)', 
+                borderRadius: 'var(--radius-sm)'
+              }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <span style={{ fontSize: '24px' }}>{track.icon}</span>
-                <span className="badge badge-cyan" style={{ fontSize: '9px', textTransform: 'uppercase' }}>
-                  {track.level}
-                </span>
+              <div>
+                <h4 style={{ fontSize: '12px', margin: 0, fontWeight: 'bold', color: '#fff' }}>{track.name}</h4>
+                <p className="text-muted" style={{ fontSize: '10px', margin: 0, marginTop: '2px' }}>
+                  {track.desc} · <span style={{ color: track.accent, fontWeight: 'bold' }}>{track.level}</span>
+                </p>
               </div>
-              <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
-                {track.name}
-              </h4>
-              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--space-3)', lineHeight: '1.3' }}>
-                {track.desc}
-              </p>
               <button 
                 onClick={handleStartAction}
-                className="btn btn-secondary" 
                 style={{
-                  padding: '6px 12px',
-                  fontSize: '11px',
-                  borderColor: track.accent,
-                  color: track.accent,
-                  background: 'rgba(255, 255, 255, 0.01)',
-                  width: 'auto',
-                  alignSelf: 'flex-start'
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--color-cyan)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  padding: '8px'
                 }}
               >
-                Explore Track Syllabus
+                →
               </button>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Statistics Section */}
-      <section className="glass-panel" style={{
-        marginBottom: 'var(--space-8)',
-        background: 'linear-gradient(135deg, rgba(12, 13, 20, 0.8) 0%, rgba(6, 6, 9, 0.8) 100%)',
-        textAlign: 'center',
-        padding: 'var(--space-5)'
-      }}>
-        <h3 style={{ fontSize: 'var(--fs-sm)', textTransform: 'uppercase', color: 'var(--color-cyan)', letterSpacing: '1px', marginBottom: 'var(--space-4)' }}>
-          Alumni Outcomes
+      {/* 05 — YOUR WORK BECOMES VISIBLE */}
+      <section style={{ marginBottom: 'var(--space-8)', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)' }}>
+        <span style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-cyan)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          05 · Outcomes
+        </span>
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px', marginBottom: 'var(--space-4)' }}>
+          Your Work Becomes Visible
         </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-          <div style={{ borderRight: '1px solid var(--border-space)', paddingRight: 'var(--space-2)' }}>
-            <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', color: '#fff' }}>8.5 LPA</div>
-            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Avg Packages</div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-around', margin: '16px 0', textAlign: 'center' }}>
+          <div>
+            <div style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-display)', color: '#fff', lineHeight: '1' }}>60</div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Days</div>
           </div>
           <div>
-            <div style={{ fontSize: 'var(--fs-xl)', fontWeight: 'bold', color: 'var(--color-emerald)' }}>32 LPA</div>
-            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)' }}>Highest Package</div>
+            <div style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-display)', color: 'var(--color-purple)', lineHeight: '1' }}>60+</div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Proofs</div>
           </div>
-        </div>
-
-        <div style={{ borderTop: '1px solid var(--border-space)', marginTop: 'var(--space-4)', paddingTop: 'var(--space-4)' }}>
-          <div style={{ fontSize: 'var(--fs-xxl)', fontWeight: 'bold', color: '#fff', lineHeight: '1' }}>94.2%</div>
-          <div style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-            Success Placement Rate
+          <div>
+            <div style={{ fontSize: '26px', fontWeight: '900', fontFamily: 'var(--font-display)', color: 'var(--color-emerald)', lineHeight: '1' }}>1</div>
+            <div style={{ fontSize: '9px', color: 'var(--color-text-secondary)', textTransform: 'uppercase', marginTop: '4px' }}>Streak</div>
           </div>
         </div>
       </section>
 
-      {/* Recruiter Trust Section */}
-      <section style={{ marginBottom: 'var(--space-8)' }}>
-        <h3 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'var(--fs-sm)',
-          textAlign: 'center',
-          color: 'var(--color-text-secondary)',
-          textTransform: 'uppercase',
-          letterSpacing: '1px',
-          marginBottom: 'var(--space-3)'
-        }}>
-          Recruiters Hiring Our Graduates
-        </h3>
+      {/* 06 — LATE-NIGHT COMMUNITY */}
+      <section style={{ marginBottom: 'var(--space-8)', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)' }}>
+        <span style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-purple)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          06 · Midnight Activity
+        </span>
         
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 'var(--space-2)'
-        }}>
-          {recruiterLogos.map((logo, index) => (
-            <div 
-              key={index}
-              className="glass-panel"
-              style={{
-                padding: 'var(--space-2) var(--space-1)',
-                textAlign: 'center',
-                background: 'rgba(255,255,255,0.01)',
-                border: '1px solid rgba(255,255,255,0.03)',
-                borderRadius: 'var(--radius-sm)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '38px'
-              }}
-            >
-              <span style={{
-                fontSize: '11px',
-                fontWeight: 'bold',
-                color: 'var(--color-text-secondary)',
-                letterSpacing: '0.5px'
-              }}>
-                {logo.name}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section style={{ marginBottom: 'var(--space-10)' }}>
-        <h3 style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 'var(--fs-md)',
-          textAlign: 'center',
-          marginBottom: 'var(--space-4)'
-        }}>
-          Placed Students Say
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginTop: '4px', marginBottom: '6px' }}>
+          While the campus sleeps,<br />
+          your streak is still moving.
         </h3>
 
-        <div className="grid-responsive-2">
-          {testimonials.map((test, index) => (
-            <div 
-              key={index}
-              className={`card card-cosmic ${test.borderClass}`}
-              style={{ padding: 'var(--space-4)' }}
-            >
-              <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                <span style={{ fontSize: '24px' }}>{test.avatar}</span>
-                <div>
-                  <h4 style={{ fontSize: 'var(--fs-sm)', fontWeight: 'bold', margin: 0 }}>{test.name}</h4>
-                  <p className="text-muted" style={{ fontSize: '9px', margin: 0 }}>{test.college} · {test.role}</p>
-                </div>
-              </div>
-              <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', lineHeight: '1.4', fontStyle: 'italic' }}>
-                "{test.text}"
-              </p>
-            </div>
-          ))}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '4px', 
+          background: 'rgba(0, 242, 254, 0.03)', 
+          border: '1px solid rgba(0, 242, 254, 0.1)', 
+          borderRadius: '4px',
+          padding: '10px 14px',
+          marginTop: 'var(--space-3)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 'bold', color: 'var(--color-cyan)' }}>
+            <span style={{ width: '6px', height: '6px', background: 'var(--color-emerald)', borderRadius: '50%', boxShadow: '0 0 6px var(--color-emerald)' }}></span>
+            🌙 248 students coding tonight
+          </div>
+          <p style={{ fontSize: '10px', color: 'var(--color-text-secondary)', margin: 0 }}>
+            Someone from AKTU just completed Day 11.
+          </p>
         </div>
       </section>
 
-      {/* Final Call to Action */}
-      <section className="glass-panel animate-card-entry" style={{
-        textAlign: 'center',
-        background: 'linear-gradient(135deg, rgba(127, 0, 255, 0.1) 0%, rgba(0, 242, 254, 0.08) 100%)',
-        border: '1px solid rgba(0, 242, 254, 0.2)',
-        padding: 'var(--space-6)',
-        marginBottom: 'var(--space-6)'
+      {/* 07 — ONE STUDENT STORY */}
+      <section style={{ marginBottom: 'var(--space-8)', borderTop: '1px solid var(--border-space)', paddingTop: 'var(--space-6)' }}>
+        <span style={{ fontSize: '9px', textTransform: 'uppercase', color: 'var(--color-emerald)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          07 · Proof Over Talk
+        </span>
+        
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <p style={{
+            fontSize: '15px',
+            fontFamily: 'var(--font-display)',
+            fontWeight: '600',
+            lineHeight: '1.4',
+            color: '#fff',
+            fontStyle: 'italic',
+            margin: '0 0 10px'
+          }}>
+            "I stopped saying I was learning development. After 60 days, I had proof."
+          </p>
+          <span style={{ fontSize: '11px', color: 'var(--color-cyan)', fontWeight: 'bold' }}>
+            — Rohan Mehta
+          </span>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)' }}>
+            {" "}· Backend Track Placement
+          </span>
+        </div>
+      </section>
+
+      {/* 08 — FINAL CTA */}
+      <section style={{ 
+        textAlign: 'center', 
+        borderTop: '1px solid var(--border-space)', 
+        paddingTop: 'var(--space-6)',
+        marginBottom: 'var(--space-4)'
       }}>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', fontWeight: 'bold', marginBottom: 'var(--space-2)' }}>
-          Ready to Make the Commitment?
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>
+          Your first proof starts tonight.
         </h3>
-        <p className="text-muted" style={{ fontSize: 'var(--fs-xs)', marginBottom: 'var(--space-5)', lineHeight: '1.4' }}>
-          Take the 60-day sandbox challenge. Build credentials, establish streaks, get visible. Start coding tonight.
+        <p className="text-muted" style={{ fontSize: '11px', marginBottom: 'var(--space-4)' }}>
+          Day 1 is waiting. Take the streak challenge.
         </p>
         <button 
           onClick={handleStartAction} 
-          className="btn btn-primary"
-          style={{ width: '100%', maxWidth: '240px', margin: '0 auto' }}
+          className="btn btn-primary anim-pulse-glow"
+          style={{ width: '100%', maxWidth: '280px', margin: '0 auto', minHeight: '44px' }}
         >
-          {isRegistered ? 'Launch Dashboard 🚀' : 'Enroll in Sandbox Free 🚀'}
+          Start the 60-Day Challenge →
         </button>
       </section>
 
       {/* Footer copyright */}
-      <footer style={{ textAlign: 'center', padding: 'var(--space-4) 0', borderTop: '1px solid var(--border-space)' }}>
-        <p className="text-muted" style={{ fontSize: '9px', letterSpacing: '0.5px' }}>
-          © 2026 ABTalks Coding Sandbox. All rights reserved.
+      <footer style={{ textAlign: 'center', padding: 'var(--space-4) 0', borderTop: '1px solid var(--border-space)', opacity: 0.6 }}>
+        <p style={{ fontSize: '8px', color: 'var(--color-text-secondary)', letterSpacing: '0.5px', margin: 0 }}>
+          © 2026 ABTalks Coding Sandbox.
         </p>
       </footer>
 
@@ -566,7 +586,7 @@ export default function LandingPage({ navigate, isRegistered, setIsRegistered, s
           justifyContent: 'center',
           zIndex: 2000,
           padding: 'var(--space-4)',
-          paddingTop: '60px', // Align form above the viewport center
+          paddingTop: '60px',
           animation: 'fadeIn 200ms ease-out forwards'
         }}>
           <div 

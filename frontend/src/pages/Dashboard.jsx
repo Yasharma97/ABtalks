@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function Dashboard({ profile, tasks, switchProfileState, navigate }) {
+export default function Dashboard({ profile, tasks, switchProfileState, onAdvanceDay, navigate }) {
   // Key state to force-restart ring drawing animation when student profile configuration shifts
   const [ringKey, setRingKey] = useState(0);
 
@@ -46,6 +46,22 @@ export default function Dashboard({ profile, tasks, switchProfileState, navigate
   // Find today's task
   const todayTask = tasks.find(t => t.status === 'PENDING') || tasks.find(t => t.status === 'LOCKED') || tasks[tasks.length - 1];
 
+  // Dynamic calculations for warning logs on missed days
+  const missedTasks = tasks.filter(t => t.status === 'MISSED');
+  const lastMissedDay = missedTasks.length > 0 ? Math.max(...missedTasks.map(t => t.dayId)) : 12;
+
+  let prevStreak = 0;
+  let checkDay = lastMissedDay - 1;
+  while (checkDay > 0) {
+    const t = tasks.find(x => x.dayId === checkDay);
+    if (t && t.status === 'COMPLETED') {
+      prevStreak++;
+      checkDay--;
+    } else {
+      break;
+    }
+  }
+
   // Calculations for circular streak progress
   const maxStreak = 60;
   const streakPercent = Math.min(100, (profile.currentStreak / maxStreak) * 100);
@@ -56,7 +72,7 @@ export default function Dashboard({ profile, tasks, switchProfileState, navigate
   const currentPeer = peerActivities[activityIndex];
 
   return (
-    <div className="anim-fade-in" style={{ padding: 'var(--space-4)', paddingBottom: '40px' }}>
+    <div className="anim-fade-in" style={{ padding: 'var(--space-4)', paddingBottom: '120px' }}>
       
       {/* 🛠️ PROFILE STATE SWITCHER (FOR TESTING EDGE CASES - LOCAL STATE) */}
       <div className="anim-card-entry delay-1" style={{
@@ -70,55 +86,77 @@ export default function Dashboard({ profile, tasks, switchProfileState, navigate
         zIndex: 10
       }}>
         <div style={{ fontSize: '10px', color: 'var(--color-cyan)', fontWeight: 'bold', marginBottom: 'var(--space-2)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Test Edge Cases (Local State Switching)
+          Edge Case Preview
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-2)' }}>
+          <button 
+            onClick={() => switchProfileState('real')} 
+            className={`btn ${profile.activePreviewState === 'real' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px' }}
+          >
+            Real User
+          </button>
           <button 
             onClick={() => switchProfileState('newbie')} 
-            className={`btn ${profile.profileState === 'newbie' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px', flex: 1 }}
+            className={`btn ${profile.activePreviewState === 'newbie' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px' }}
           >
-            👶 Newbie
+            New
           </button>
           <button 
             onClick={() => switchProfileState('steady')} 
-            className={`btn ${profile.profileState === 'steady' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px', flex: 1 }}
+            className={`btn ${profile.activePreviewState === 'steady' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px' }}
           >
-            🔥 Steady
+            Active
           </button>
           <button 
             onClick={() => switchProfileState('missed')} 
-            className={`btn ${profile.profileState === 'missed' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px', flex: 1 }}
+            className={`btn ${profile.activePreviewState === 'missed' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: 'var(--space-1) var(--space-2)', fontSize: '10px' }}
           >
-            ⚠️ Missed Day
+            Missed
           </button>
         </div>
+
+        {/* ☀️ ADVANCE DAY ACTION FOR REAL USER STREAK TESTING */}
+        {profile.activePreviewState === 'real' && (
+          <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <button 
+              onClick={onAdvanceDay}
+              className="btn"
+              style={{ 
+                padding: '4px 10px', 
+                fontSize: '9.5px', 
+                background: 'rgba(5, 255, 196, 0.06)', 
+                border: '1px solid rgba(5, 255, 196, 0.3)', 
+                color: 'var(--color-emerald)',
+                borderRadius: 'var(--radius-sm)',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                minHeight: '24px'
+              }}
+            >
+              Advance Day ☀️
+            </button>
+            <span style={{ fontSize: '9px', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+              (Skip active day to simulate streak logic)
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 1. Header (Dynamic details / Empty Profile handling) */}
       <div className="anim-card-entry delay-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
         <div>
-          {profile.name ? (
-            <>
-              <h2 style={{ fontSize: 'var(--fs-md)', marginBottom: '2px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
-                {profile.name}
-              </h2>
-              <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>
-                {profile.college}
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 style={{ fontSize: 'var(--fs-md)', marginBottom: '2px', color: 'var(--color-text-secondary)', fontStyle: 'italic', fontWeight: '500' }}>
-                Anonymous Explorer
-              </h2>
-              <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>
-                Profile incomplete · Complete Day 1 to set details
-              </p>
-            </>
-          )}
+          <>
+            <h2 style={{ fontSize: 'var(--fs-md)', marginBottom: '2px', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>
+              {profile.name || "Rohit Sharma"}
+            </h2>
+            <p className="text-muted" style={{ fontSize: '11px', margin: 0 }}>
+              {profile.college || "Delhi Technological University (DTU)"}
+            </p>
+          </>
           <span className="badge badge-cyan" style={{ fontSize: '9px', marginTop: '6px' }}>
             {profile.track}
           </span>
@@ -237,8 +275,12 @@ export default function Dashboard({ profile, tasks, switchProfileState, navigate
               <>
                 <h4 style={{ fontSize: 'var(--fs-sm)', marginBottom: '2px', color: 'var(--color-rose)' }}>Streak Frozen ❄️</h4>
                 <p className="text-muted" style={{ fontSize: '11px', lineHeight: '1.3', margin: 0 }}>
-                  You missed Day 12. Submit today's task to revive your streak!
+                  You missed Day {lastMissedDay}. Submit today's task to revive your streak!
                 </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '6px', fontSize: '10.5px' }}>
+                  <span style={{ color: 'var(--color-text-secondary)' }}>⏮️ Previous streak: <strong style={{ color: '#fff' }}>{prevStreak} days</strong></span>
+                  <span style={{ color: 'var(--color-rose)' }}>🔥 Current streak: <strong>0 days</strong></span>
+                </div>
               </>
             )}
             
@@ -372,6 +414,23 @@ export default function Dashboard({ profile, tasks, switchProfileState, navigate
             Achievements & Badges
           </h3>
           
+          
+          {(!profile.badges || profile.badges.length === 0) && (
+            <div style={{ 
+              fontSize: '11px', 
+              color: 'var(--color-text-secondary)', 
+              background: 'rgba(255,255,255,0.02)', 
+              border: '1px dashed var(--border-space)', 
+              borderRadius: 'var(--radius-sm)', 
+              padding: '10px', 
+              marginBottom: 'var(--space-3)', 
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }}>
+              Complete your first challenge to unlock achievements.
+            </div>
+          )}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
             {allAchievements.map((badge, i) => {
               const isUnlocked = profile.badges && profile.badges.includes(badge.name);
